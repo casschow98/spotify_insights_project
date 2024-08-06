@@ -51,8 +51,8 @@ x-airflow-common:
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
   # image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.9.2}
   build:
-    context: .
-    dockerfile: ./airflow/Dockerfile
+    context: ./airflow
+    dockerfile: Dockerfile
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
@@ -99,28 +99,44 @@ x-airflow-common:
 
 services:
   spark-master:
-    build: ./spark
+    # build:
+    #   context: .
+    #   dockerfile: ./spark/Dockerfile
+    image: bitnami/spark:3.5.1
     container_name: spark-master
     ports:
       - "8080:8080"  # Spark Web UI
       - "7077:7077"  # Spark Master Port
     environment:
       - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
     volumes:
       - ./spark:/opt/spark
     networks:
       - spark_network
 
   spark-worker-1:
-    build: ./spark
+    # build:
+    #   context: .
+    #   dockerfile: ./spark/Dockerfile
+    image: bitnami/spark:3.5.1
     container_name: spark-worker-1
     ports:
-      - "8081:8081"  # Spark Worker UI
+      - "8081:8080"  # Spark Worker UI
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
     depends_on:
       - spark-master
     volumes:
@@ -129,15 +145,23 @@ services:
       - spark_network
 
   spark-worker-2:
-    build: ./spark
+    # build:
+    #   context: ./spark
+    #   dockerfile: Dockerfile
+    image: bitnami/spark:3.5.1
     container_name: spark-worker-2
     ports:
-      - "8082:8082"  # Spark Worker UI
+      - "8082:8080"  # Spark Worker UI
     environment:
       - SPARK_MODE=worker
       - SPARK_MASTER_URL=spark://spark-master:7077
       - SPARK_WORKER_MEMORY=1G
       - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_USER=spark
     depends_on:
       - spark-master
     volumes:
@@ -158,7 +182,7 @@ services:
       interval: 10s
       retries: 5
       start_period: 5s
-    restart: always
+    restart: no
     networks:
       - airflow_network
 
@@ -167,14 +191,14 @@ services:
     # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
     image: redis:7.2-bookworm
     expose:
-      - 6379
+      - 6379:6379
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 30s
       retries: 50
       start_period: 30s
-    restart: always
+    restart: no
     networks:
       - airflow_network
 
@@ -182,14 +206,14 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-      - 8083:8083
+      - 8083:8080
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    restart: no
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -206,7 +230,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    restart: no
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -231,7 +255,7 @@ services:
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
-    restart: always
+    restart: no
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -248,7 +272,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    restart: no
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -353,7 +377,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: always
+    restart: no
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
