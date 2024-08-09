@@ -28,3 +28,7 @@ variable "bq_dataset_name" {
   default     = "spotify_cchow_dataset"
 }
 
+variable "bq_table_name" {
+  description = "gcp table ID"
+  default     = "spotify_cchow_table"
+}
