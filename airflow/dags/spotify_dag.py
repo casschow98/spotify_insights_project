@@ -78,6 +78,7 @@ upload_gcs_task = PythonOperator(
     dag=dag
 )
 
+# Task to delete the /opt/airflow/tmp/ directory and contents
 delete_local_task = PythonOperator(
     task_id='delete_local_task',
     python_callable=delete_contents,
@@ -86,32 +87,6 @@ delete_local_task = PythonOperator(
         "names": 'tmp'
     }
 )
-
-# # Task to convert the geojson to a newline-delimited geojson format
-# geojsonl_task_fire = BashOperator(
-#     task_id='geojsonl_task_fire',
-#     bash_command="geojson2ndjson {{ params.in_geojson }} > {{ params.out_geojsonl }}",
-#     params = {
-#         "in_geojson" : f"{home_path}/tmp/{fire_poly_file}.geojson",
-#         "out_geojsonl" : f"{home_path}/tmp/{fire_poly_file}_nl.geojsonl"
-#     },
-#     dag=dag
-# )
-
-
-
-
-# # Task to trigger the start of this dag once the rec_data_dag successfully finishes its final task
-# wait_for_rec_data = ExternalTaskSensor(
-#     task_id='wait_for_rec_data',
-#     external_dag_id='rec_data_dag',
-#     external_task_id='delete_contents_task',  # Task ID to check in the parent DAG
-#     mode='poke',
-#     timeout=600,
-#     poke_interval=30,
-#     allowed_states=['success'],
-#     dag=dag,
-# )
 
 
 # Dependencies between the tasks
