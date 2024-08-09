@@ -18,7 +18,6 @@ crash.*.log
 *.terraform.lock.hcl
 .terraform.tfstate.lock.info
 
-airflow/.env
 
 # Logs and temporary files
 *.log
@@ -27,5 +26,5 @@ airflow/plugins/
 airflow/config/
 
 
-notes.txt
+.env
 
