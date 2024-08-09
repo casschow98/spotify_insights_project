@@ -19,11 +19,9 @@ class gcs_bq_upload:
     def upload_to_gcs(self, filename):
         # Initialize a storage client
         storage_client = storage.Client()
-
-        # Get the bucket
         bucket = storage_client.bucket(self.BUCKET)
 
-        # Extract year, month, and day from the filename to get the bucket path
+        # Get GCS destination path using year, month, and day from the filename
         self.gcs_path = self.get_gcs_path(filename)
     
         # Create a blob object
@@ -72,6 +70,7 @@ class gcs_bq_upload:
                     
 
     def get_gcs_path(self, filename):
+        # Use regexpressions to search for matches for date values in the filename string
         match = re.search(r'(\d{4})-(\d{2})-(\d{2})', filename)
         if match:
             year, month, day = match.groups()
@@ -81,6 +80,7 @@ class gcs_bq_upload:
     
 
     def process_csv(self):
+        # Technically should only contain one .csv in the folder if the delete_contents task was successful
         for filename in os.listdir(self.SOURCE_DIR):
             if filename.endswith('.csv'):
                 self.upload_to_gcs(filename)
