@@ -3,6 +3,7 @@ from airflow.models import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from google.cloud import storage
 import pendulum
 import datetime
@@ -29,15 +30,6 @@ default_args = {
     "retry_delay": datetime.timedelta(minutes=0.5)
 }
 
-def run_ingestion():
-    # sp_tracks = get_recent_tracks()
-    # sp_tracks.retrieve_songs()
-    get_recent_tracks.retrieve_songs()
-
-def run_gcp_fn():
-    # to_gcp = gcs_bq_upload()
-    # to_gcp.process_csv()
-    gcs_bq_upload.process_csv()
 
 def delete_contents(home_dir, names, **kwargs):
     # Loop through names
@@ -53,6 +45,7 @@ def delete_contents(home_dir, names, **kwargs):
     except Exception as e:
             print(f"Error removing {path}: {e}")
 
+
 # Define the DAG
 dag = DAG(
     'spotify_dag',
@@ -64,17 +57,17 @@ dag = DAG(
 
 # Define tasks
 
-# Task to refresh the spotify api token to obtain a new access token
+# Task to retrieve new api tokens, send api requests, and download data to .csv
 get_recent_tracks_task = PythonOperator(
     task_id='get_recent_tracks_task',
-    python_callable=run_ingestion,
+    python_callable=get_recent_tracks.retrieve_songs(),
     dag=dag
 )
 
 # Task to upload to Google Cloud Storage
 upload_gcs_task = PythonOperator(
     task_id='upload_gcs_task',
-    python_callable=run_gcp_fn,
+    python_callable=gcs_bq_upload.process_csv(),
     dag=dag
 )
 
@@ -87,6 +80,19 @@ delete_local_task = PythonOperator(
         "names": 'tmp'
     }
 )
+
+# # Task to submit the Spark job
+# spark_submit_task = SparkSubmitOperator(
+#     task_id='spark_submit_task',
+#     application='/path/to/spark_job.py',  # Path to your Spark job script
+#     conn_id='spark_default',  # Connection ID for Spark
+#     application_args=[
+#         '--project_id', 'your_project_id',
+#         '--bq_table_input', 'your_dataset.your_table',
+#         '--bucket', 'your_bucket',
+#     ],
+#     dag=dag,
+# )
 
 
 # Dependencies between the tasks
