@@ -4,13 +4,13 @@ from google.cloud import storage
 from datetime import datetime
 import re
 from airflow.exceptions import AirflowException
-
+import subprocess
 
 class gcs_bq_upload:
     def __init__(self):
         self.HOME_PATH = os.environ.get("AIRFLOW_HOME","/opt/airflow/")
         self.BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
-        self.DATASET = "de_zoomcamp_cchow_dataset"
+        self.DATASET = os.environ.get("BQ_DATASET")
         self.PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
         self.TABLE = os.environ.get("BQ_TABLE")
         self.SOURCE_DIR = os.path.join(self.HOME_PATH,"tmp")
@@ -38,36 +38,55 @@ class gcs_bq_upload:
             print(f"Error uploading file {source_path} to {blob}: {str(e)}")
             # Automatically fails airflow task if there was an error in uploading the file
             raise AirflowException("Task failed due to an exception")
+        
+        # Call the Spark job submission after the upload
+        self.run_spark_job()
 
 
-    def load_data_to_bigquery(self):
-            # Reference to the dataset and table in BigQuery
-            dataset_ref = self.bq_client.dataset(self.DATASET)
-            table_ref = dataset_ref.table(self.TABLE)
+    # def load_data_to_bigquery(self):
+    #         bq_client = bigquery.Client(project=self.PROJECT_ID)
+    #         source_uri = f"gs://{self.BUCKET}/{self.gcs_path}"
+    #         destination_table = f"{self.PROJECT_ID}.{self.DATASET}.{self.TABLE}"
 
-            # Construct the URI for the file in GCS
-            uri = f"gs://{self.BUCKET}/{self.gcs_path}"
+    #         job_config = bigquery.LoadJobConfig(
+    #             source_format=bigquery.SourceFormat.CSV,
+    #             skip_leading_rows=1,
+    #             autodetect=True,
+    #         )
 
-            # Define the BigQuery load job configuration
-            job_config = bigquery.LoadJobConfig(
-                source_format=bigquery.SourceFormat.CSV,
-                skip_leading_rows=1,
-                autodetect=True,
-            )
-
-            # Load data from GCS to BigQuery
-            try:
-                load_job = self.bq_client.load_table_from_uri(
-                    uri,
-                    table_ref,
-                    job_config=job_config
-                )
-                load_job.result()
-                print(f"Successfully loaded data from {uri} to {self.table_name} table in BigQuery")
-            except Exception as e:
-                print(f"Error loading data from {uri} to {self.table_name}: {str(e)}")
-                raise AirflowException("Task failed due to an exception")
+    #         try:
+    #             load_job = bq_client.load_table_from_uri(
+    #                 source_uri,
+    #                 destination_table,
+    #                 job_config=job_config
+    #             )
+    #             load_job.result()
+    #             print(f"Successfully loaded data from {source_uri} to {self.table_name} table in BigQuery")
+    #         except Exception as e:
+    #             print(f"Error loading data from {source_uri} to {self.table_name}: {str(e)}")
+    #             raise AirflowException("Task failed due to an exception")
                     
+
+    def run_spark_job(self):
+        # Command to submit the Spark job
+        spark_submit_command = [
+            'spark-submit',
+            '--master', 'local',
+            'opt/spark/spark_job.py',
+            '--input', f'gs://{self.BUCKET}/{self.gcs_path}',
+            '--project', self.PROJECT_ID,
+            '--dataset', self.DATASET,
+            '--table', self.TABLE
+        ]
+
+        try:
+            # Execute the Spark job
+            subprocess.run(spark_submit_command, check=True)
+            print("Spark job submitted successfully")
+        except subprocess.CalledProcessError as e:
+            print(f"Error submitting Spark job: {str(e)}")
+            raise AirflowException("Task failed due to an exception")
+    
 
     def get_gcs_path(self, filename):
         # Use regexpressions to search for matches for date values in the filename string
@@ -84,7 +103,7 @@ class gcs_bq_upload:
         for filename in os.listdir(self.SOURCE_DIR):
             if filename.endswith('.csv'):
                 self.upload_to_gcs(filename)
-                self.load_data_to_bigquery()
+                # self.load_data_to_bigquery()
 
 
 
