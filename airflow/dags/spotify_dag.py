@@ -3,7 +3,7 @@ from airflow.models import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.sensors.external_task import ExternalTaskSensor
-from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+# from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 from google.cloud import storage
 import pendulum
 import datetime
@@ -26,9 +26,18 @@ default_args = {
     "start_date": pendulum.datetime(2024, 1, 1, tz="America/Vancouver"),
     "end_date": pendulum.datetime(2025, 2, 1, tz="America/Vancouver"),
     "depends_on_past": False,
-    "retries": 1,
+    "retries": 0,
     "retry_delay": datetime.timedelta(minutes=0.5)
 }
+
+
+def get_songs_callable():
+    instance = get_recent_tracks()
+    instance.retrieve_songs()
+
+def gcp_upload_callable():
+    instance = gcs_bq_upload
+    instance.process_csv()
 
 
 def delete_contents(home_dir, names, **kwargs):
@@ -60,14 +69,14 @@ dag = DAG(
 # Task to retrieve new api tokens, send api requests, and download data to .csv
 get_recent_tracks_task = PythonOperator(
     task_id='get_recent_tracks_task',
-    python_callable=get_recent_tracks.retrieve_songs(),
+    python_callable=get_songs_callable,
     dag=dag
 )
 
 # Task to upload to Google Cloud Storage
 upload_gcs_task = PythonOperator(
     task_id='upload_gcs_task',
-    python_callable=gcs_bq_upload.process_csv(),
+    python_callable=gcp_upload_callable,
     dag=dag
 )
 
