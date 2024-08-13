@@ -80,6 +80,10 @@ x-airflow-common:
     GCP_PROJECT_ID: ${GCP_PROJECT_ID}
     GCP_STORAGE_BUCKET: ${GCP_STORAGE_BUCKET}
 
+  env_file:
+    - .env
+
+
 
 
   volumes:

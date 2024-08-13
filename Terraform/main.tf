@@ -59,21 +59,124 @@ resource "google_bigquery_table" "default" {
     type = "DAY"
   }
 
-#   schema = <<EOF
-# [
-#   {
-#     "name": "permalink",
-#     "type": "STRING",
-#     "mode": "NULLABLE",
-#     "description": "The Permalink"
-#   },
-#   {
-#     "name": "state",
-#     "type": "STRING",
-#     "mode": "NULLABLE",
-#     "description": "State where the head office is located"
-#   }
-# ]
-# EOF
+
+  schema = <<EOF
+[
+  {
+    "name": "track_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "track_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },  
+  {
+    "name": "artists",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },  
+  {
+    "name": "played_at",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "duration_ms",
+    "type": "INTEGER",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+    {
+    "name": "track_duration",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+    {
+    "name": "spotify_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "danceability",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "energy",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "key",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "loudness",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "mode",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "speechiness",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "acousticness",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "instrumentalness",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "liveness",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "time_signature",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "valence",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  },
+    {
+    "name": "tempo",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": ""
+  }
+]
+EOF
 
 }

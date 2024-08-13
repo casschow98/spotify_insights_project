@@ -8,6 +8,8 @@ class get_token:
         # self.CLIENT_ID= os.getenv('CLIENT_ID')
         # self.CLIENT_SECRET= os.getenv('CLIENT_SECRET')
         self.AUTH_BASE64= os.getenv('AUTH_BASE64')
+        if self.AUTH_BASE64 is None:
+            raise ValueError("AUTH_BASE64 environment variable is not set")
         self.TOKEN_URL = 'https://accounts.spotify.com/api/token'
         self.REFRESH_TOKEN= os.getenv('REFRESH_TOKEN')
 

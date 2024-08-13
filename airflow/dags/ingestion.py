@@ -8,7 +8,7 @@ import json
 import requests
 from datetime import datetime, timezone
 import pytz
-from token import get_token
+from auth_token import get_token
 from google.cloud import bigquery
 from exceptions import EmptyResponseError
 
@@ -22,6 +22,8 @@ class get_recent_tracks:
         self.DATASET = os.environ.get("BQ_DATASET")
         self.PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
         self.TABLE = os.environ.get("BQ_TABLE")
+        self.AUTH_TOKEN = ""
+        self.CC_TOKEN = ""
 
 
     def api_request_recently_played(self):
@@ -67,7 +69,7 @@ class get_recent_tracks:
         # Define the query to get the latest timestamp from the table
         query = f"""
         SELECT
-            MAX(played_at_PT) AS latest_pacific_datetime
+            MAX(played_at) AS latest_pacific_datetime
         FROM
             `{self.PROJECT_ID}.{self.DATASET}.{self.TABLE}`
         """
@@ -121,7 +123,7 @@ class get_recent_tracks:
             track_duration = self.ms_reformat(duration_ms)
             spotify_url = item['track']['external_urls']['spotify']
 
-            rt_rows.append({'track_id': track_id, 'name': track_name, 'artists': artists_names, 'played_at': played_at, 'track_duration': track_duration, 'spotify_url': spotify_url})
+            rt_rows.append({'track_id': track_id, 'name': track_name, 'artists': artists_names, 'played_at': played_at, 'duration_ms': duration_ms, 'track_duration': track_duration, 'spotify_url': spotify_url})
 
         rt_df = pd.DataFrame(rt_rows)
         rt_df = df.sort_values(by='played_at', ascending=True)
@@ -145,8 +147,9 @@ class get_recent_tracks:
             liveness = item['liveness'],
             valence = item['valence'],
             tempo = item['temp']
+            time_signature = item['time_signature']
 
-            af_rows.append({'track_id': track_id, 'danceability': danceability, 'energy': energy, 'key': key, 'loudness': loudness, 'mode': mode, 'speechiness': speechiness, 'acousticness': acousticness, 'instrumentalness': instrumentalness, 'liveness': liveness, 'valence': valence, 'tempo': tempo})
+            af_rows.append({'track_id': track_id, 'danceability': danceability, 'energy': energy, 'key': key, 'loudness': loudness, 'mode': mode, 'speechiness': speechiness, 'acousticness': acousticness, 'instrumentalness': instrumentalness, 'liveness': liveness, 'valence': valence, 'tempo': tempo, 'time_signature': time_signature})
 
         af_df = pd.DataFrame(af_rows)
 
@@ -166,8 +169,9 @@ class get_recent_tracks:
 
 
     def retrieve_songs(self):
-        self.AUTH_TOKEN = get_token.refresh()
-        self.CC_TOKEN = get_token.get_cc_access_token()
+        instance = get_token()
+        self.AUTH_TOKEN = instance.refresh()
+        self.CC_TOKEN = instance.get_cc_access_token()
         self.songs_to_csv()
 
     
