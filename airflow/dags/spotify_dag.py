@@ -3,8 +3,7 @@ from airflow.models import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
 from airflow.sensors.external_task import ExternalTaskSensor
-# from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from google.cloud import storage
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 import pendulum
 import datetime
 import os
@@ -16,8 +15,11 @@ from gcp_fn import gcs_bq_upload
 # Define bucket and home path environment variables
 home_path = os.environ.get("AIRFLOW_HOME","/opt/airflow/")
 BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
-DATASET = "de_zoomcamp_cchow_dataset"
+DATASET = os.environ.get("BQ_DATASET")
+TABLE = os.environ.get("BQ_TABLE")
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
+JAVA_HOME = os.environ.get("JAVA_HOME","/opt/bitnami/java")
+
 
 
 # Default arguments for the DAG
@@ -36,7 +38,7 @@ def get_songs_callable():
     instance.retrieve_songs()
 
 def gcp_upload_callable():
-    instance = gcs_bq_upload
+    instance = gcs_bq_upload()
     instance.process_csv()
 
 
@@ -90,19 +92,27 @@ delete_local_task = PythonOperator(
     }
 )
 
-# # Task to submit the Spark job
-# spark_submit_task = SparkSubmitOperator(
-#     task_id='spark_submit_task',
-#     application='/path/to/spark_job.py',  # Path to your Spark job script
-#     conn_id='spark_default',  # Connection ID for Spark
-#     application_args=[
-#         '--project_id', 'your_project_id',
-#         '--bq_table_input', 'your_dataset.your_table',
-#         '--bucket', 'your_bucket',
-#     ],
-#     dag=dag,
-# )
+# Task to submit the Spark job
+spark_submit_task = SparkSubmitOperator(
+    task_id='spark_submit_task',
+    application='/opt/spark/jobs/spark_job.py',
+    conn_id='spark-conn',
+    executor_memory='2g',
+    total_executor_cores=2,
+    conf={
+        'spark.driver.extraJavaOptions': '-Dlog4j.logLevel=ERROR',
+        'spark.executor.extraJavaOptions': f'-Djava.home={JAVA_HOME}',
+        'spark.master': 'local[*]' 
+    },
+    application_args=[
+        '--project_id', PROJECT_ID,
+        '--gcs_path', '{{ ti.xcom_pull(task_ids="upload_gcs_task", key="gcs_path") }}',
+        '--dataset', DATASET,
+        '--table', TABLE
+    ],
+    dag=dag
+)
 
 
 # Dependencies between the tasks
-get_recent_tracks_task >> upload_gcs_task >> delete_local_task
+get_recent_tracks_task >> upload_gcs_task >> delete_local_task >> spark_submit_task
