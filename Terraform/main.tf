@@ -82,13 +82,13 @@ resource "google_bigquery_table" "default" {
   },  
   {
     "name": "played_at",
-    "type": "STRING",
+    "type": "TIMESTAMP",
     "mode": "REQUIRED",
     "description": ""
   },
   {
     "name": "duration_ms",
-    "type": "INTEGER",
+    "type": "INT64",
     "mode": "NULLABLE",
     "description": ""
   },

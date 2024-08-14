@@ -93,26 +93,26 @@ delete_local_task = PythonOperator(
 )
 
 # Task to submit the Spark job
-spark_submit_task = SparkSubmitOperator(
-    task_id='spark_submit_task',
-    application='/opt/spark/jobs/spark_job.py',
-    conn_id='spark-conn',
-    executor_memory='2g',
-    total_executor_cores=2,
-    conf={
-        'spark.driver.extraJavaOptions': '-Dlog4j.logLevel=ERROR',
-        'spark.executor.extraJavaOptions': f'-Djava.home={JAVA_HOME}',
-        'spark.master': 'local[*]' 
-    },
-    application_args=[
-        '--project_id', PROJECT_ID,
-        '--gcs_path', '{{ ti.xcom_pull(task_ids="upload_gcs_task", key="gcs_path") }}',
-        '--dataset', DATASET,
-        '--table', TABLE
-    ],
-    dag=dag
-)
+# spark_submit_task = SparkSubmitOperator(
+#     task_id='spark_submit_task',
+#     application='/opt/spark/jobs/spark_job.py',
+#     conn_id='spark-conn',
+#     executor_memory='2g',
+#     total_executor_cores=2,
+#     conf={
+#         'spark.driver.extraJavaOptions': '-Dlog4j.logLevel=ERROR',
+#         'spark.executor.extraJavaOptions': f'-Djava.home={JAVA_HOME}',
+#         'spark.master': 'local[*]' 
+#     },
+#     application_args=[
+#         '--project_id', PROJECT_ID,
+#         '--gcs_path', '{{ ti.xcom_pull(task_ids="upload_gcs_task", key="gcs_path") }}',
+#         '--dataset', DATASET,
+#         '--table', TABLE
+#     ],
+#     dag=dag
+# )
 
 
 # Dependencies between the tasks
-get_recent_tracks_task >> upload_gcs_task >> delete_local_task >> spark_submit_task
+get_recent_tracks_task >> upload_gcs_task >> delete_local_task
