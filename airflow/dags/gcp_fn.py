@@ -16,7 +16,7 @@ class gcs_bq_upload:
         self.SOURCE_DIR = os.path.join(self.HOME_PATH,"tmp")
 
     # Function to upload files to Google Cloud Storage
-    def upload_to_gcs(self, filename):
+    def upload_to_gcs(self, filename, **kwargs):
         # Initialize a storage client
         storage_client = storage.Client()
         bucket = storage_client.bucket(self.BUCKET)
@@ -40,7 +40,7 @@ class gcs_bq_upload:
             raise AirflowException("Task failed due to an exception")
         
         # Call the Spark job submission after the upload
-        self.run_spark_job()
+        # self.run_spark_job()
 
 
     # def load_data_to_bigquery(self):
@@ -67,25 +67,25 @@ class gcs_bq_upload:
     #             raise AirflowException("Task failed due to an exception")
                     
 
-    def run_spark_job(self):
-        # Command to submit the Spark job
-        spark_submit_command = [
-            'spark-submit',
-            '--master', 'local',
-            'opt/spark/spark_job.py',
-            '--input', f'gs://{self.BUCKET}/{self.gcs_path}',
-            '--project', self.PROJECT_ID,
-            '--dataset', self.DATASET,
-            '--table', self.TABLE
-        ]
+    # def run_spark_job(self):
+    #     # Command to submit the Spark job
+    #     spark_submit_command = [
+    #         '/opt/bitnami/spark/bin/spark-submit',
+    #         '--master', 'local',
+    #         'opt/spark/spark_job.py',
+    #         '--bq_table_input', f'gs://{self.BUCKET}/{self.gcs_path}',
+    #         '--project', self.PROJECT_ID,
+    #         '--dataset', self.DATASET,
+    #         '--table', self.TABLE
+    #     ]
 
-        try:
-            # Execute the Spark job
-            subprocess.run(spark_submit_command, check=True)
-            print("Spark job submitted successfully")
-        except subprocess.CalledProcessError as e:
-            print(f"Error submitting Spark job: {str(e)}")
-            raise AirflowException("Task failed due to an exception")
+    #     try:
+    #         # Execute the Spark job
+    #         subprocess.run(spark_submit_command, check=True)
+    #         print("Spark job submitted successfully")
+    #     except subprocess.CalledProcessError as e:
+    #         print(f"Error submitting Spark job: {str(e)}")
+    #         raise AirflowException("Task failed due to an exception")
     
 
     def get_gcs_path(self, filename):
@@ -99,7 +99,6 @@ class gcs_bq_upload:
     
 
     def process_csv(self):
-        # Technically should only contain one .csv in the folder if the delete_contents task was successful
         for filename in os.listdir(self.SOURCE_DIR):
             if filename.endswith('.csv'):
                 self.upload_to_gcs(filename)

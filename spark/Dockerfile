@@ -1,40 +1,27 @@
-# Dockerfile for Spark
+# Use the official Spark base image
+FROM apache/spark:3.5.1
 
-FROM bitnami/spark:3.5.1
-
-
-# Custom logging
-# COPY log4j2.properties /opt/bitnami/spark/conf/log4j2.properties
-
-# any files/libraries you need on the cluster, install here ie:
-RUN pip install --no-cache-dir pandas
-
-# FROM apache/spark:latest
-
-# USER root
-
-# # Set environment variables
+# Set environment variables for Spark
 ENV SPARK_HOME=/opt/spark
 ENV PATH=$SPARK_HOME/bin:$PATH
 
-# RUN mkdir -p /var/lib/apt/lists/partial
+USER root
+# Install Python and pip
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip && \
+    pip3 install pyspark && \
+    apt-get clean
 
-# # Copy configuration files if you have custom configurations
-# # COPY spark-defaults.conf $SPARK_HOME/conf/
-# # COPY spark-env.sh $SPARK_HOME/conf/
+# Install PySpark
+RUN pip3 install pyspark
 
-# # Install additional dependencies if needed
-# RUN apt-get update && apt-get install -y curl procps && \
-#     apt-get clean && \
-#     rm -rf /var/lib/apt/lists/*
+COPY ./jobs /opt/spark/jobs
 
-# # Default command
-# CMD ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
-CMD ["sh", "-c", "if [ \"$SPARK_MODE\" = \"master\" ]; then \
-        /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master; \
-    elif [ \"$SPARK_MODE\" = \"worker\" ]; then \
-        /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --master spark://spark-master:7077; \
-    else \
-        echo \"Invalid SPARK_MODE value: $SPARK_MODE\"; \
-        exit 1; \
-    fi"]
+# Expose the ports for Spark
+EXPOSE 8080 7077
+
+USER spark
+
+# Set the default command to start Spark
+CMD ["/opt/spark/bin/spark-submit", "org.apache.spark.deploy.master.Master"]
+

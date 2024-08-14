@@ -76,12 +76,14 @@ class get_recent_tracks:
         
         query_job = client.query(query)
         result = query_job.result()
-        row = result.next()
 
-        if row.played_at_PT is None:
-            unix_timestamp = 1727811200000 # unix_timestamp for August 1, 2024 00:00:00 PT
+        row = next(result, None)
+        if row is None or row.latest_pacific_datetime is None:
+            print("No rows returned from the query.")
+            unix_timestamp = 1722556800010 # unix_timestamp for August 1, 2024 00:00:00 PT
         else:
-            latest_pacific_datetime = row.played_at_PT
+            print("Row fields:", row.keys())
+            latest_pacific_datetime = row.played_at
             pacific_tz = pytz.timezone('America/Los_Angeles')
             latest_pacific_datetime = datetime.strptime(latest_pacific_datetime,'%Y-%m-%d %H:%M:%S %Z')
             # Localize the datetime object to Pacific Time
@@ -105,7 +107,8 @@ class get_recent_tracks:
         utc_dt = datetime.strptime(utc_ts, "%Y-%m-%dT%H:%M:%S.%fZ")
         utc_dt = utc_dt.replace(tzinfo=pytz.utc)
         pt_dt = utc_dt.astimezone(pacific_tz)
-        pt_fmt = pt_dt.strftime("%Y-%m-%d %H:%M:%S %Z")
+        pt_fmt = pt_dt.strftime("%Y-%m-%d %H:%M:%S")
+
         return pt_fmt
 
 
@@ -117,52 +120,74 @@ class get_recent_tracks:
             track_id = item['track']['id']
             track_name = item['track']['name']
             artists_names = ", ".join([artist['name'] for artist in item['track']['artists']])
-            utc_timestamp = item['played_at']
-            played_at = self.utc_to_pt(utc_timestamp)
+            played_at = item['played_at']
             duration_ms = item['track']['duration_ms']
-            track_duration = self.ms_reformat(duration_ms)
+            # track_duration = self.ms_reformat(duration_ms)
             spotify_url = item['track']['external_urls']['spotify']
 
-            rt_rows.append({'track_id': track_id, 'name': track_name, 'artists': artists_names, 'played_at': played_at, 'duration_ms': duration_ms, 'track_duration': track_duration, 'spotify_url': spotify_url})
+            rt_rows.append({
+                'track_id': track_id,
+                'name': track_name,
+                'artists': artists_names,
+                'played_at': played_at,
+                'duration_ms': duration_ms,
+                # 'track_duration': track_duration,
+                'spotify_url': spotify_url
+            })
 
         rt_df = pd.DataFrame(rt_rows)
-        rt_df = df.sort_values(by='played_at', ascending=True)
+        rt_df = rt_df.sort_values(by='played_at', ascending=True)
         rt_df = rt_df.iloc[1:,:]
 
 
-        track_ids_list = rt_df['track_id'].to_list()
+        track_ids_list = rt_df['track_id'].drop_duplicates().to_list()
         audio_features_json = self.api_request_audio_features(track_ids_list)
 
         af_rows = []
         for item in audio_features_json['audio_features']:
             track_id = item['id']
-            danceability = item['danceability'],
-            energy = item['energy'],
-            key = item['key'],
-            loudness = item['loudness'],
-            mode = item['mode'],
-            speechiness = item['speechiness'],
-            acousticness = item['acousticness'],
-            instrumentalness = item['instrumentalness'],
-            liveness = item['liveness'],
-            valence = item['valence'],
-            tempo = item['temp']
+            danceability = item['danceability']
+            energy = item['energy']
+            key = item['key']
+            loudness = item['loudness']
+            mode = item['mode']
+            speechiness = item['speechiness']
+            acousticness = item['acousticness']
+            instrumentalness = item['instrumentalness']
+            liveness = item['liveness']
+            valence = item['valence']
+            tempo = item['tempo']
             time_signature = item['time_signature']
 
-            af_rows.append({'track_id': track_id, 'danceability': danceability, 'energy': energy, 'key': key, 'loudness': loudness, 'mode': mode, 'speechiness': speechiness, 'acousticness': acousticness, 'instrumentalness': instrumentalness, 'liveness': liveness, 'valence': valence, 'tempo': tempo, 'time_signature': time_signature})
+            af_rows.append({
+                'track_id': track_id,
+                'danceability': danceability,
+                'energy': energy,
+                'key': key,
+                'loudness': loudness,
+                'mode': mode,
+                'speechiness': speechiness,
+                'acousticness': acousticness,
+                'instrumentalness': instrumentalness,
+                'liveness': liveness,
+                'valence': valence,
+                'tempo': tempo,
+                'time_signature': time_signature
+            })
 
         af_df = pd.DataFrame(af_rows)
 
         df = pd.merge(rt_df, af_df, on='track_id', how='left')
         df = df.sort_values(by='played_at', ascending=False)
 
-        # Find the earliest 'played_at' value in the DataFrame
+        # Find the latest 'played_at' value in the DataFrame
         latest_played_at = df['played_at'].max()
 
-        # Convert the earliest 'played_at' timestamp to a format suitable for filenames
+        # Convert the latest 'played_at' timestamp to a format suitable for filenames
         # Remove timezone info and replace colons with dashes for filename safety
-        latest_dt = datetime.strptime(latest_played_at, "%Y-%m-%d %H:%M:%S %Z")
-        formatted_dt = latest_dt.strftime('%Y-%m-%d_%H-%M-%S')
+        latest_played_at = self.utc_to_pt(latest_played_at)
+        latest_dt = datetime.strptime(latest_played_at, "%Y-%m-%d %H:%M:%S")
+        formatted_dt = latest_dt.strftime('%Y-%m-%d_%H-%M')
 
         os.makedirs(f"/opt/airflow/tmp/", exist_ok=True)
         df.to_csv(f"/opt/airflow/tmp/spotify_tracks_{formatted_dt}.csv", index=False)

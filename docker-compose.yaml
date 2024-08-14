@@ -104,9 +104,9 @@ x-airflow-common:
 services:
   spark-master:
     # build:
-    #   context: .
-    #   dockerfile: ./spark/Dockerfile
-    image: bitnami/spark:3.5.1
+    #   context: ./spark
+    #   dockerfile: Dockerfile
+    image: bitnami/spark:3.5.1 
     container_name: spark-master
     ports:
       - "8080:8080"  # Spark Web UI
@@ -125,9 +125,9 @@ services:
 
   spark-worker-1:
     # build:
-    #   context: .
-    #   dockerfile: ./spark/Dockerfile
-    image: bitnami/spark:3.5.1
+    #   context: ./spark
+    #   dockerfile: Dockerfile
+    image: bitnami/spark:3.5.1 
     container_name: spark-worker-1
     ports:
       - "8081:8080"  # Spark Worker UI
@@ -152,7 +152,7 @@ services:
     # build:
     #   context: ./spark
     #   dockerfile: Dockerfile
-    image: bitnami/spark:3.5.1
+    image: bitnami/spark:3.5.1 
     container_name: spark-worker-2
     ports:
       - "8082:8080"  # Spark Worker UI
