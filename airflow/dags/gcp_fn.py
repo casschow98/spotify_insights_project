@@ -4,7 +4,7 @@ from google.cloud import storage
 from datetime import datetime
 import re
 from airflow.exceptions import AirflowException
-import subprocess
+import json
 
 class gcs_bq_upload:
     def __init__(self):
@@ -38,33 +38,39 @@ class gcs_bq_upload:
             print(f"Error uploading file {source_path} to {blob}: {str(e)}")
             # Automatically fails airflow task if there was an error in uploading the file
             raise AirflowException("Task failed due to an exception")
-        
-        # Call the Spark job submission after the upload
-        # self.run_spark_job()
 
 
-    # def load_data_to_bigquery(self):
-    #         bq_client = bigquery.Client(project=self.PROJECT_ID)
-    #         source_uri = f"gs://{self.BUCKET}/{self.gcs_path}"
-    #         destination_table = f"{self.PROJECT_ID}.{self.DATASET}.{self.TABLE}"
+    def load_data_to_bigquery(self):
 
-    #         job_config = bigquery.LoadJobConfig(
-    #             source_format=bigquery.SourceFormat.CSV,
-    #             skip_leading_rows=1,
-    #             autodetect=True,
-    #         )
+        schema_path = os.path.join(os.path.dirname(__file__), 'schema.json')
+        if not os.path.isfile(schema_path):
+            raise FileNotFoundError(f"Schema file not found: {schema_path}")
+            
+        with open(schema_path, 'r') as file:
+            schema = json.load(file)
 
-    #         try:
-    #             load_job = bq_client.load_table_from_uri(
-    #                 source_uri,
-    #                 destination_table,
-    #                 job_config=job_config
-    #             )
-    #             load_job.result()
-    #             print(f"Successfully loaded data from {source_uri} to {self.table_name} table in BigQuery")
-    #         except Exception as e:
-    #             print(f"Error loading data from {source_uri} to {self.table_name}: {str(e)}")
-    #             raise AirflowException("Task failed due to an exception")
+        bq_client = bigquery.Client(project=self.PROJECT_ID)
+        source_uri = f"gs://{self.BUCKET}/{self.gcs_path}"
+        destination_table = f"{self.PROJECT_ID}.{self.DATASET}.{self.TABLE}"
+
+        job_config = bigquery.LoadJobConfig(
+            schema=[bigquery.SchemaField(field['name'], field['type'], field['mode']) for field in schema],
+            source_format=bigquery.SourceFormat.CSV,
+            skip_leading_rows=1,
+            autodetect=True,
+        )
+
+        try:
+            load_job = bq_client.load_table_from_uri(
+                source_uri,
+                destination_table,
+                job_config=job_config
+            )
+            load_job.result()
+            print(f"Successfully loaded data from {source_uri} to {self.TABLE} table in BigQuery")
+        except Exception as e:
+            print(f"Error loading data from {source_uri} to {self.TABLE}: {str(e)}")
+            raise AirflowException("Task failed due to an exception")
                     
 
     # def run_spark_job(self):
@@ -102,7 +108,7 @@ class gcs_bq_upload:
         for filename in os.listdir(self.SOURCE_DIR):
             if filename.endswith('.csv'):
                 self.upload_to_gcs(filename)
-                # self.load_data_to_bigquery()
+                self.load_data_to_bigquery()
 
 
 

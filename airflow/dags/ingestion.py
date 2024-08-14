@@ -79,7 +79,7 @@ class get_recent_tracks:
 
         row = next(result, None)
         if row is None or row.latest_pacific_datetime is None:
-            print("No rows returned from the query.")
+            print("No rows returned from the query. Using default August 1, 2024 timestamp for API request.")
             unix_timestamp = 1722556800010 # unix_timestamp for August 1, 2024 00:00:00 PT
         else:
             print("Row fields:", row.keys())
@@ -104,9 +104,9 @@ class get_recent_tracks:
 
     def utc_to_pt(self, utc_ts):
         pacific_tz = pytz.timezone('America/Los_Angeles')
-        utc_dt = datetime.strptime(utc_ts, "%Y-%m-%dT%H:%M:%S.%fZ")
-        utc_dt = utc_dt.replace(tzinfo=pytz.utc)
-        pt_dt = utc_dt.astimezone(pacific_tz)
+        # utc_dt = datetime.strptime(utc_ts, "%Y-%m-%dT%H:%M:%S.%fZ")
+        # utc_dt = utc_dt.replace(tzinfo=pytz.utc)
+        pt_dt = utc_ts.astimezone(pacific_tz)
         pt_fmt = pt_dt.strftime("%Y-%m-%d %H:%M:%S")
 
         return pt_fmt
@@ -122,16 +122,16 @@ class get_recent_tracks:
             artists_names = ", ".join([artist['name'] for artist in item['track']['artists']])
             played_at = item['played_at']
             duration_ms = item['track']['duration_ms']
-            # track_duration = self.ms_reformat(duration_ms)
+            track_duration = self.ms_reformat(duration_ms)
             spotify_url = item['track']['external_urls']['spotify']
 
             rt_rows.append({
                 'track_id': track_id,
-                'name': track_name,
+                'track_name': track_name,
                 'artists': artists_names,
                 'played_at': played_at,
                 'duration_ms': duration_ms,
-                # 'track_duration': track_duration,
+                'track_duration': track_duration,
                 'spotify_url': spotify_url
             })
 
@@ -179,6 +179,30 @@ class get_recent_tracks:
 
         df = pd.merge(rt_df, af_df, on='track_id', how='left')
         df = df.sort_values(by='played_at', ascending=False)
+
+        df['track_id'] = df['track_id'].astype(str)
+        df['track_name'] = df['track_name'].astype(str)
+        df['artists'] = df['artists'].astype(str)
+        df['played_at'] = pd.to_datetime(df['played_at'])
+        df['duration_ms'] = df['duration_ms'].astype(int)
+        df['track_duration'] = df['track_duration'].astype(str)
+        df['spotify_url'] = df['spotify_url'].astype(str)
+        
+        # Audio features
+        df['danceability'] = df['danceability'].astype(float)
+        df['energy'] = df['energy'].astype(float)
+        df['key'] = df['key'].astype(int)
+        df['loudness'] = df['loudness'].astype(float)
+        df['mode'] = df['mode'].astype(int)
+        df['speechiness'] = df['speechiness'].astype(float)
+        df['acousticness'] = df['acousticness'].astype(float)
+        df['instrumentalness'] = df['instrumentalness'].astype(float)
+        df['liveness'] = df['liveness'].astype(float)
+        df['valence'] = df['valence'].astype(float)
+        df['tempo'] = df['tempo'].astype(float)
+        df['time_signature'] = df['time_signature'].astype(int)
+
+        print(df.loc[:,"time_signature"])
 
         # Find the latest 'played_at' value in the DataFrame
         latest_played_at = df['played_at'].max()
