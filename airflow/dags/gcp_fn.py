@@ -16,7 +16,7 @@ class gcs_bq_upload:
         self.SOURCE_DIR = os.path.join(self.HOME_PATH,"tmp")
 
     # Function to upload files to Google Cloud Storage
-    def upload_to_gcs(self, filename, **kwargs):
+    def upload_to_gcs(self, filename):
         # Initialize a storage client
         storage_client = storage.Client()
         bucket = storage_client.bucket(self.BUCKET)
