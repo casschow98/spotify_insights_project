@@ -56,8 +56,7 @@ class gcs_bq_upload:
         job_config = bigquery.LoadJobConfig(
             schema=[bigquery.SchemaField(field['name'], field['type'], field['mode']) for field in schema],
             source_format=bigquery.SourceFormat.CSV,
-            skip_leading_rows=1,
-            autodetect=True,
+            skip_leading_rows=1
         )
 
         try:
