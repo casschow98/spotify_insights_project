@@ -118,8 +118,11 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - SPARK_USER=spark
+    env_file:
+      - .env
     volumes:
       - ./spark:/opt/spark
+      - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
     networks:
       - spark_network
 
@@ -143,8 +146,11 @@ services:
       - SPARK_USER=spark
     depends_on:
       - spark-master
+    env_file:
+      - .env
     volumes:
       - ./spark:/opt/spark
+      - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
     networks:
       - spark_network
 
@@ -168,8 +174,11 @@ services:
       - SPARK_USER=spark
     depends_on:
       - spark-master
+    env_file:
+      - .env
     volumes:
       - ./spark:/opt/spark
+      - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
     networks:
       - spark_network
 
