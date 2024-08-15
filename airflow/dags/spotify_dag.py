@@ -42,7 +42,7 @@ def gcp_upload_callable():
     instance.process_csv()
 
 
-def delete_contents(home_dir, names, **kwargs):
+def delete_contents(home_dir, names):
     # Loop through names
     try:
         for name in names:
@@ -92,6 +92,19 @@ delete_local_task = PythonOperator(
     }
 )
 
+submit_spark_job_task = BashOperator(
+    task_id='submit_spark_job_task',
+    bash_command="""
+        spark-submit \
+        --master local \
+        /opt/bitnami/spark/spark_job.py \
+        --project_id {PROJECT_ID} \
+        --dataset {DATASET} \
+        --table {TABLE}
+    """
+)
+
+
 # Task to submit the Spark job
 # spark_submit_task = SparkSubmitOperator(
 #     task_id='spark_submit_task',
@@ -106,7 +119,6 @@ delete_local_task = PythonOperator(
 #     },
 #     application_args=[
 #         '--project_id', PROJECT_ID,
-#         '--gcs_path', '{{ ti.xcom_pull(task_ids="upload_gcs_task", key="gcs_path") }}',
 #         '--dataset', DATASET,
 #         '--table', TABLE
 #     ],
@@ -115,4 +127,4 @@ delete_local_task = PythonOperator(
 
 
 # Dependencies between the tasks
-get_recent_tracks_task >> upload_gcs_task >> delete_local_task
+get_recent_tracks_task >> upload_gcs_task >> delete_local_task >> submit_spark_job_task
