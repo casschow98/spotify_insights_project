@@ -1,2 +1,0 @@
-class EmptyResponseError(Exception):
-    pass
