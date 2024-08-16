@@ -109,7 +109,7 @@ delete_local_task = PythonOperator(
 # Task to submit the Spark job
 spark_submit_task = SparkSubmitOperator(
     task_id='spark_submit_task',
-    application='/opt/bitnami/spark/jobs/spark_job.py',
+    application='spark/spark_job.py',
     conn_id='spark-conn',
     executor_memory='2g',
     total_executor_cores=2,

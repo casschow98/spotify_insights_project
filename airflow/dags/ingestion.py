@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 import pytz
 from auth_token import get_token
 from google.cloud import bigquery
-from exceptions import EmptyResponseError
+from airflow.exceptions import AirflowSkipException
 
 
 
@@ -46,7 +46,7 @@ class get_recent_tracks:
         recent_tracks_json = response.json()
 
         if not recent_tracks_json.get('items'):
-            raise EmptyResponseError("No new tracks played recently on Spotify.")
+            raise AirflowSkipException("No new tracks played recently on Spotify. Stopping DAG execution.")
 
         return recent_tracks_json
 
@@ -66,7 +66,7 @@ class get_recent_tracks:
         # Initialize a BigQuery client
         client = bigquery.Client(project=self.PROJECT_ID)
         
-        # Define the query to get the latest timestamp from the table
+        # Query to get the latest timestamp from the table
         query = f"""
         SELECT
             MAX(played_at) AS latest_datetime
@@ -84,12 +84,7 @@ class get_recent_tracks:
         else:
             latest_datetime = row.latest_datetime
             print(f"Latest datetime found is {latest_datetime}. Using this as parameter to request songs from API played after this time.")
-            # pacific_tz = pytz.timezone('America/Los_Angeles')
-            # latest_pacific_datetime = datetime.strptime(latest_pacific_datetime,'%Y-%m-%d %H:%M:%S %Z')
-            # Localize the datetime object to Pacific Time
-            # latest_pacific_datetime = pacific_tz.localize(latest_pacific_datetime)
-            # latest_datetime_utc = latest_pacific_datetime.astimezone(pytz.utc)
-            unix_timestamp = int(latest_datetime.timestamp())
+            unix_timestamp = int(latest_datetime.timestamp() * 1000)
 
         return unix_timestamp
 
@@ -138,6 +133,8 @@ class get_recent_tracks:
         rt_df = pd.DataFrame(rt_rows)
         rt_df = rt_df.sort_values(by='played_at', ascending=True)
         rt_df = rt_df.iloc[1:,:]
+        size = len(rt_df)
+        print(f"**Dataframe has total of {size} records**")
 
 
         track_ids_list = rt_df['track_id'].drop_duplicates().to_list()
@@ -201,8 +198,6 @@ class get_recent_tracks:
         df['valence'] = df['valence'].astype(float)
         df['tempo'] = df['tempo'].astype(float)
         df['time_signature'] = df['time_signature'].astype(int)
-
-        print(df.loc[:,"time_signature"])
 
         # Find the latest 'played_at' value in the DataFrame
         latest_played_at = df['played_at'].max()
