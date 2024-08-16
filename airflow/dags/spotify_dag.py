@@ -92,39 +92,36 @@ delete_local_task = PythonOperator(
     }
 )
 
-submit_spark_job_task = BashOperator(
-    task_id='submit_spark_job_task',
-    bash_command="""
-        spark-submit \
-        --master local \
-        /opt/bitnami/spark/spark_job.py \
-        --project_id {PROJECT_ID} \
-        --dataset {DATASET} \
-        --table {TABLE}
-    """
-)
-
-
-# Task to submit the Spark job
-# spark_submit_task = SparkSubmitOperator(
-#     task_id='spark_submit_task',
-#     application='/opt/spark/jobs/spark_job.py',
-#     conn_id='spark-conn',
-#     executor_memory='2g',
-#     total_executor_cores=2,
-#     conf={
-#         'spark.driver.extraJavaOptions': '-Dlog4j.logLevel=ERROR',
-#         'spark.executor.extraJavaOptions': f'-Djava.home={JAVA_HOME}',
-#         'spark.master': 'local[*]' 
-#     },
-#     application_args=[
-#         '--project_id', PROJECT_ID,
-#         '--dataset', DATASET,
-#         '--table', TABLE
-#     ],
-#     dag=dag
+# submit_spark_job_task = BashOperator(
+#     task_id='submit_spark_job_task',
+#     bash_command="""
+#         spark-submit \
+#         --conf spark.executorEnv.JAVA_HOME=/opt/bitnami/java \
+#         --master local \
+#         /opt/bitnami/spark/spark_job.py \
+#         --project_id {PROJECT_ID} \
+#         --dataset {DATASET} \
+#         --table {TABLE}
+#     """
 # )
 
 
+# Task to submit the Spark job
+spark_submit_task = SparkSubmitOperator(
+    task_id='spark_submit_task',
+    application='/opt/bitnami/spark/jobs/spark_job.py',
+    conn_id='spark-conn',
+    executor_memory='2g',
+    total_executor_cores=2,
+    application_args=[
+        '--project_id', PROJECT_ID,
+        '--dataset', DATASET,
+        '--table', TABLE
+    ],
+    verbose = True,
+    dag=dag
+)
+
+
 # Dependencies between the tasks
-get_recent_tracks_task >> upload_gcs_task >> delete_local_task >> submit_spark_job_task
+get_recent_tracks_task >> upload_gcs_task >> delete_local_task >> spark_submit_task

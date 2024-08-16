@@ -69,7 +69,7 @@ class get_recent_tracks:
         # Define the query to get the latest timestamp from the table
         query = f"""
         SELECT
-            MAX(played_at) AS latest_pacific_datetime
+            MAX(played_at) AS latest_datetime
         FROM
             `{self.PROJECT_ID}.{self.DATASET}.{self.TABLE}`
         """
@@ -78,19 +78,19 @@ class get_recent_tracks:
         result = query_job.result()
 
         row = next(result, None)
-        if row is None or row.latest_pacific_datetime is None:
+        if row is None or row.latest_datetime is None:
             print("No rows returned from the query. Using default August 1, 2024 timestamp for API request.")
             unix_timestamp = 1722556800010 # unix_timestamp for August 1, 2024 00:00:00 PT
         else:
-            print("Row fields:", row.keys())
-            latest_pacific_datetime = row.played_at
-            pacific_tz = pytz.timezone('America/Los_Angeles')
-            latest_pacific_datetime = datetime.strptime(latest_pacific_datetime,'%Y-%m-%d %H:%M:%S %Z')
+            latest_datetime = row.latest_datetime
+            print(f"Latest datetime found is {latest_datetime}. Using this as parameter to request songs from API played after this time.")
+            # pacific_tz = pytz.timezone('America/Los_Angeles')
+            # latest_pacific_datetime = datetime.strptime(latest_pacific_datetime,'%Y-%m-%d %H:%M:%S %Z')
             # Localize the datetime object to Pacific Time
-            latest_pacific_datetime = pacific_tz.localize(latest_pacific_datetime)
-            latest_datetime_utc = latest_pacific_datetime.astimezone(pytz.utc)
-            unix_timestamp = int(latest_datetime_utc.timestamp())
-        
+            # latest_pacific_datetime = pacific_tz.localize(latest_pacific_datetime)
+            # latest_datetime_utc = latest_pacific_datetime.astimezone(pytz.utc)
+            unix_timestamp = int(latest_datetime.timestamp())
+
         return unix_timestamp
 
 

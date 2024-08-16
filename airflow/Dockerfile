@@ -2,19 +2,24 @@ FROM apache/airflow:latest-python3.11
 
 
 ENV AIRFLOW_HOME=/opt/airflow
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 USER root
 
+# Install necessary packages including Java
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
         vim \
-        tree \
         curl \
-    && rm -rf /var/lib/apt/lists/*
+        gcc \
+        python3-dev \
+        openjdk-17-jre-headless \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 COPY requirements.txt .
 USER airflow
-RUN pip install --no-cache-dir "apache-airflow==2.9.2" -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 USER root
 ENV PATH=$PATH:/root/.local/bin
 
