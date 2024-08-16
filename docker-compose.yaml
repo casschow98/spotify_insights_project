@@ -83,9 +83,6 @@ x-airflow-common:
   env_file:
     - .env
 
-
-
-
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs
@@ -100,14 +97,25 @@ x-airflow-common:
       condition: service_healthy
     postgres:
       condition: service_healthy
+  networks:
+    - shared_network
+
+
+x-spark-common: &spark-common
+  image: bitnami/spark:3.5.1
+  volumes:
+    - ./spark/jobs:/opt/bitnami/spark/jobs
+    - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
+    # - ./spark/spark-env.sh:/opt/bitnami/spark/conf/spark-env.sh
+  env_file:
+    - .env
+  networks:
+    - shared_network
 
 services:
   spark-master:
-    # build:
-    #   context: ./spark
-    #   dockerfile: Dockerfile
-    image: bitnami/spark:3.5.1 
-    container_name: spark-master
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.master.Master
     ports:
       - "8080:8080"  # Spark Web UI
       - "7077:7077"  # Spark Master Port
@@ -118,20 +126,10 @@ services:
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
       - SPARK_SSL_ENABLED=no
       - SPARK_USER=spark
-    env_file:
-      - .env
-    volumes:
-      - ./spark:/opt/spark
-      - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
-    networks:
-      - spark_network
 
   spark-worker-1:
-    # build:
-    #   context: ./spark
-    #   dockerfile: Dockerfile
-    image: bitnami/spark:3.5.1 
-    container_name: spark-worker-1
+    <<: *spark-common
+    command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     ports:
       - "8081:8080"  # Spark Worker UI
     environment:
@@ -146,41 +144,24 @@ services:
       - SPARK_USER=spark
     depends_on:
       - spark-master
-    env_file:
-      - .env
-    volumes:
-      - ./spark:/opt/spark
-      - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
-    networks:
-      - spark_network
 
-  spark-worker-2:
-    # build:
-    #   context: ./spark
-    #   dockerfile: Dockerfile
-    image: bitnami/spark:3.5.1 
-    container_name: spark-worker-2
-    ports:
-      - "8082:8080"  # Spark Worker UI
-    environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=1G
-      - SPARK_WORKER_CORES=2
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_USER=spark
-    depends_on:
-      - spark-master
-    env_file:
-      - .env
-    volumes:
-      - ./spark:/opt/spark
-      - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
-    networks:
-      - spark_network
+  # spark-worker-2:
+  #   <<: *spark-common
+  #   command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
+  #   ports:
+  #     - "8082:8080"  # Spark Worker UI
+  #   environment:
+  #     - SPARK_MODE=worker
+  #     - SPARK_MASTER_URL=spark://spark-master:7077
+  #     - SPARK_WORKER_MEMORY=1G
+  #     - SPARK_WORKER_CORES=2
+  #     - SPARK_RPC_AUTHENTICATION_ENABLED=no
+  #     - SPARK_RPC_ENCRYPTION_ENABLED=no
+  #     - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+  #     - SPARK_SSL_ENABLED=no
+  #     - SPARK_USER=spark
+  #   depends_on:
+  #     - spark-master
 
   postgres:
     image: postgres:13
@@ -197,7 +178,7 @@ services:
       start_period: 5s
     restart: no
     networks:
-      - airflow_network
+      - shared_network
 
   redis:
     # Redis is limited to 7.2-bookworm due to licencing change
@@ -213,7 +194,7 @@ services:
       start_period: 30s
     restart: no
     networks:
-      - airflow_network
+      - shared_network
 
   airflow-webserver:
     <<: *airflow-common
@@ -231,8 +212,6 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-    networks:
-      - airflow_network
 
   airflow-scheduler:
     <<: *airflow-common
@@ -248,8 +227,6 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-    networks:
-      - airflow_network
 
   airflow-worker:
     <<: *airflow-common
@@ -273,8 +250,6 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-    networks:
-      - airflow_network
 
   airflow-triggerer:
     <<: *airflow-common
@@ -290,8 +265,6 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-    networks:
-      - airflow_network
 
   airflow-init:
     <<: *airflow-common
@@ -356,8 +329,6 @@ services:
     user: "0:0"
     volumes:
       - .:/sources
-    networks:
-      - airflow_network
       
   airflow-cli:
     <<: *airflow-common
@@ -371,38 +342,32 @@ services:
       - bash
       - -c
       - airflow
-    networks:
-      - airflow_network
 
   # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
   # See: https://docs.docker.com/compose/profiles/
-  flower:
-    <<: *airflow-common
-    command: celery flower
-    profiles:
-      - flower
-    ports:
-      - "5555:5555"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    restart: no
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
-    networks:
-      - airflow_network
+  # flower:
+  #   <<: *airflow-common
+  #   command: celery flower
+  #   profiles:
+  #     - flower
+  #   ports:
+  #     - "5555:5555"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+  #   restart: no
+  #   depends_on:
+  #     <<: *airflow-common-depends-on
+  #     airflow-init:
+  #       condition: service_completed_successfully
 
 volumes:
   postgres-db-volume:
 
 networks:
-  spark_network:
-    driver: bridge
-  airflow_network:
+  shared_network:
     driver: bridge
