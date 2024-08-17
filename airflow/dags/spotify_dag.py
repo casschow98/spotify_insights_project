@@ -36,16 +36,15 @@ default_args = {
 
 
 def get_songs_callable():
-    instance = get_recent_tracks()
-    instance.retrieve_songs()
+    grt = get_recent_tracks()
+    grt.retrieve_songs()
 
 def gcp_upload_callable():
-    instance = gcs_bq_upload()
-    instance.process_csv()
+    guc = gcs_bq_upload()
+    guc.process_csv()
 
 
 def delete_contents(home_dir, names):
-    # Loop through names
     try:
         for name in names:
             path = os.path.join(home_dir,name)

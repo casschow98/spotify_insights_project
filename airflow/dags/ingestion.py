@@ -229,9 +229,9 @@ class get_recent_tracks:
 
 
     def retrieve_songs(self):
-        instance = get_token()
-        self.AUTH_TOKEN = instance.refresh()
-        self.CC_TOKEN = instance.get_cc_access_token()
+        gt = get_token()
+        self.AUTH_TOKEN = gt.refresh()
+        self.CC_TOKEN = gt.get_cc_access_token()
         self.songs_to_csv()
 
     
