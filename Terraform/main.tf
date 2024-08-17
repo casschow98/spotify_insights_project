@@ -92,16 +92,28 @@ resource "google_bigquery_table" "default" {
     "mode": "NULLABLE",
     "description": ""
   },
-    {
+  {
     "name": "track_duration",
     "type": "STRING",
     "mode": "NULLABLE",
     "description": ""
   },
-    {
+  {
     "name": "spotify_url",
     "type": "STRING",
     "mode": "NULLABLE",
+    "description": ""
+  },
+  {
+    "name": "upload_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": ""
+  },
+  {
+    "name": "unique_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
     "description": ""
   },
   {
