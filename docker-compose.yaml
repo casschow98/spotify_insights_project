@@ -102,7 +102,7 @@ x-airflow-common:
 
 
 x-spark-common: &spark-common
-  image: bitnami/spark:3.5.1
+  image: bitnami/spark:3.5.2
   volumes:
     # - ./spark/jobs:/opt/bitnami/spark/jobs
     - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json

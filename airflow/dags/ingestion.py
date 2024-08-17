@@ -11,6 +11,7 @@ import pytz
 from auth_token import get_token
 from google.cloud import bigquery
 from airflow.exceptions import AirflowSkipException
+import re
 
 
 
@@ -45,7 +46,9 @@ class get_recent_tracks:
         )
         recent_tracks_json = response.json()
 
-        if not recent_tracks_json.get('items'):
+        if (not recent_tracks_json.get('items') or 
+        not isinstance(recent_tracks_json, dict) or 
+        len(recent_tracks_json.get('items', [])) <= 1):
             raise AirflowSkipException("No new tracks played recently on Spotify. Stopping DAG execution.")
 
         return recent_tracks_json
@@ -110,6 +113,10 @@ class get_recent_tracks:
     def songs_to_csv(self):
         recent_tracks_json = self.api_request_recently_played()
 
+        dt = datetime.now(timezone.utc) 
+        utc_time = dt.replace(tzinfo=timezone.utc) 
+        now_timestamp = utc_time.timestamp()
+
         rt_rows = []
         for item in recent_tracks_json['items']:
             track_id = item['track']['id']
@@ -120,6 +127,11 @@ class get_recent_tracks:
             track_duration = self.ms_reformat(duration_ms)
             spotify_url = item['track']['external_urls']['spotify']
 
+            ts_clean = re.sub(r'\W+', '', played_at)
+            
+            # Create unique identifier
+            unique_id = f"{track_id}{ts_clean}"
+
             rt_rows.append({
                 'track_id': track_id,
                 'track_name': track_name,
@@ -127,7 +139,9 @@ class get_recent_tracks:
                 'played_at': played_at,
                 'duration_ms': duration_ms,
                 'track_duration': track_duration,
-                'spotify_url': spotify_url
+                'spotify_url': spotify_url,
+                'upload_timestamp': now_timestamp,
+                'unique_id': unique_id
             })
 
         rt_df = pd.DataFrame(rt_rows)
@@ -184,6 +198,8 @@ class get_recent_tracks:
         df['duration_ms'] = df['duration_ms'].astype(int)
         df['track_duration'] = df['track_duration'].astype(str)
         df['spotify_url'] = df['spotify_url'].astype(str)
+        df['upload_timestamp'] = pd.to_datetime(df['upload_timestamp'])
+        df['unique_id'] = df['unique_id'].astype(str)
         
         # Audio features
         df['danceability'] = df['danceability'].astype(float)

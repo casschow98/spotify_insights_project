@@ -19,6 +19,8 @@ DATASET = os.environ.get("BQ_DATASET")
 TABLE = os.environ.get("BQ_TABLE")
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 JAVA_HOME = os.environ.get("JAVA_HOME","/opt/bitnami/java")
+GCP_CREDS= os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+
 
 
 
@@ -92,36 +94,52 @@ delete_local_task = PythonOperator(
     }
 )
 
-# submit_spark_job_task = BashOperator(
-#     task_id='submit_spark_job_task',
+# spark_submit_task = BashOperator(
+#     task_id='spark_submit_task',
 #     bash_command="""
 #         spark-submit \
-#         --conf spark.executorEnv.JAVA_HOME=/opt/bitnami/java \
-#         --master local \
-#         /opt/bitnami/spark/spark_job.py \
+#         --master spark://spark-master:7077 \
+#         --conf spark.jars.packages=com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.24.1,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.5 \
+#         --conf spark.hadoop.google.cloud.auth.service.account.enable=true \
+#         --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile={GCP_CREDS} \
+#         --conf spark.hadoop.fs.AbstractFileSystem.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS \
+#         --conf spark.hadoop.fs.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem \
+#         --conf spark.hadoop.fs.gs.auth.service.account.json.keyfile={GCP_CREDS} \
+#         --conf spark.hadoop.fs.gs.auth.service.account.enable=true \
+#         '/opt/airflow/dags/spark/spark_job.py' \
 #         --project_id {PROJECT_ID} \
 #         --dataset {DATASET} \
-#         --table {TABLE}
+#         --table {TABLE} \
+#         --bucket {BUCKET}
 #     """
 # )
 
 
 # Task to submit the Spark job
-spark_submit_task = SparkSubmitOperator(
-    task_id='spark_submit_task',
-    application='spark/spark_job.py',
-    conn_id='spark-conn',
-    executor_memory='2g',
-    total_executor_cores=2,
-    application_args=[
-        '--project_id', PROJECT_ID,
-        '--dataset', DATASET,
-        '--table', TABLE
-    ],
-    verbose = True,
-    dag=dag
-)
+# spark_submit_task = SparkSubmitOperator(
+#     task_id='spark_submit_task',
+#     application='dags/spark/spark_job.py',
+#     conn_id='spark-conn',
+#     executor_memory='2g',
+#     total_executor_cores=2,
+#     application_args=[
+#         '--project_id', PROJECT_ID,
+#         '--dataset', DATASET,
+#         '--table', TABLE,
+#         '--bucket', BUCKET
+#     ],
+#     verbose = True,
+#     conf={
+#         "spark.jars.packages":"com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:31.1-jre",
+#         # "spark.jars":"dags/spark/spark-bigquery-with-dependencies_2.12-0.34.0.jar,dags/spark/gcs-connector-hadoop3-2.2.10.jar",
+#         "spark.hadoop.google.cloud.auth.service.account.enable":"true",
+#         "spark.hadoop.google.cloud.auth.service.account.json.keyfile":GCP_CREDS,
+#         "spark.hadoop.fs.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
+#         "spark.hadoop.fs.AbstractFileSystem.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
+#     },
+#     dag=dag
+# )
 
 
 # Dependencies between the tasks
-get_recent_tracks_task >> upload_gcs_task >> delete_local_task >> spark_submit_task
+get_recent_tracks_task >> upload_gcs_task >> delete_local_task

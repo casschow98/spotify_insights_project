@@ -35,6 +35,16 @@
         "mode": "NULLABLE"
     },
     {
+        "name": "upload_timestamp",
+        "type": "TIMESTAMP",
+        "mode": "REQUIRED"
+    },
+      {
+        "name": "unique_id",
+        "type": "STRING",
+        "mode": "REQUIRED"
+    },
+    {
         "name": "danceability",
         "type": "FLOAT64",
         "mode": "NULLABLE"
