@@ -13,7 +13,7 @@ class gcs_bq_upload:
         self.DATASET = os.environ.get("BQ_DATASET")
         self.PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
         self.TABLE = os.environ.get("BQ_TABLE")
-        self.SOURCE_DIR = os.path.join(self.HOME_PATH,"tmp")
+        self.SOURCE_DIR = os.path.join(self.HOME_PATH,"working")
 
     # Function to upload files to Google Cloud Storage
     def upload_to_gcs(self, filename):

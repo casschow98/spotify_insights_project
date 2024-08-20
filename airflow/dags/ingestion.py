@@ -114,8 +114,7 @@ class get_recent_tracks:
         recent_tracks_json = self.api_request_recently_played()
 
         dt = datetime.now(timezone.utc) 
-        utc_time = dt.replace(tzinfo=timezone.utc) 
-        now_timestamp = utc_time.timestamp()
+        print(f"Current timestamp is {dt}..using this for upload_timestamp field.")
 
         rt_rows = []
         for item in recent_tracks_json['items']:
@@ -140,7 +139,7 @@ class get_recent_tracks:
                 'duration_ms': duration_ms,
                 'track_duration': track_duration,
                 'spotify_url': spotify_url,
-                'upload_timestamp': now_timestamp,
+                'upload_timestamp': dt,
                 'unique_id': unique_id
             })
 
@@ -224,8 +223,8 @@ class get_recent_tracks:
         latest_dt = datetime.strptime(latest_played_at, "%Y-%m-%d %H:%M:%S")
         formatted_dt = latest_dt.strftime('%Y-%m-%d_%H-%M')
 
-        os.makedirs(f"/opt/airflow/tmp/", exist_ok=True)
-        df.to_csv(f"/opt/airflow/tmp/spotify_tracks_{formatted_dt}.csv", index=False)
+        os.makedirs(f"/opt/airflow/working/", exist_ok=True)
+        df.to_csv(f"/opt/airflow/working/spotify_tracks_{formatted_dt}.csv", index=False)
 
 
     def retrieve_songs(self):

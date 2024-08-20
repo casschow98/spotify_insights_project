@@ -48,6 +48,7 @@ def delete_contents(home_dir, names):
     try:
         for name in names:
             path = os.path.join(home_dir,name)
+            print(f"Attempting to remove {path}...")
             if os.path.isfile(path):
                 os.remove(path)
                 print(f"Successfully removed file {path}")
@@ -83,14 +84,16 @@ upload_gcs_task = PythonOperator(
     dag=dag
 )
 
-# Task to delete the /opt/airflow/tmp/ directory and contents
+# Task to delete the /opt/airflow/working/ directory and contents
 delete_local_task = PythonOperator(
     task_id='delete_local_task',
     python_callable=delete_contents,
     op_kwargs={
         "home_dir": home_path,
-        "names": 'tmp'
-    }
+        "names": ["working"]
+    },
+    provide_context=True,
+    dag=dag
 )
 
 # spark_submit_task = BashOperator(
@@ -115,29 +118,35 @@ delete_local_task = PythonOperator(
 
 
 # Task to submit the Spark job
-# spark_submit_task = SparkSubmitOperator(
-#     task_id='spark_submit_task',
-#     application='dags/spark/spark_job.py',
-#     conn_id='spark-conn',
-#     executor_memory='2g',
-#     total_executor_cores=2,
-#     application_args=[
-#         '--project_id', PROJECT_ID,
-#         '--dataset', DATASET,
-#         '--table', TABLE,
-#         '--bucket', BUCKET
-#     ],
-#     verbose = True,
-#     conf={
-#         "spark.jars.packages":"com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:31.1-jre",
-#         # "spark.jars":"dags/spark/spark-bigquery-with-dependencies_2.12-0.34.0.jar,dags/spark/gcs-connector-hadoop3-2.2.10.jar",
-#         "spark.hadoop.google.cloud.auth.service.account.enable":"true",
-#         "spark.hadoop.google.cloud.auth.service.account.json.keyfile":GCP_CREDS,
-#         "spark.hadoop.fs.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
-#         "spark.hadoop.fs.AbstractFileSystem.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
-#     },
-#     dag=dag
-# )
+spark_submit_task = SparkSubmitOperator(
+    task_id='spark_submit_task',
+    application='/opt/airflow/dags/spark/spark_job.py',
+    conn_id='spark-conn',
+    executor_memory='2g',
+    total_executor_cores=2,
+    application_args=[
+        '--project_id', PROJECT_ID,
+        '--dataset', DATASET,
+        '--table', TABLE,
+        '--bucket', BUCKET
+    ],
+    verbose = True,
+    conf={
+        "spark.executor.memory": "2G",
+        "spark.executor.cores": "1",
+        "spark.driver.memory": "2G",
+        "spark.driver.cores": "1",
+        "spark.executor.userClassPathFirst": "true",
+        "spark.driver.userClassPathFirst": "true",
+        "spark.jars.packages":"com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:30.1-jre",
+        # "spark.jars":"dags/spark/spark-bigquery-with-dependencies_2.12-0.34.0.jar,dags/spark/gcs-connector-hadoop3-2.2.10.jar",
+        "spark.hadoop.google.cloud.auth.service.account.enable":"true",
+        "spark.hadoop.google.cloud.auth.service.account.json.keyfile":GCP_CREDS,
+        "spark.hadoop.fs.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
+        "spark.hadoop.fs.AbstractFileSystem.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
+    },
+    dag=dag
+)
 
 
 # Dependencies between the tasks

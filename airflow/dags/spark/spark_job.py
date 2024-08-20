@@ -14,9 +14,18 @@ def main(project_id, dataset, table, bucket):
     conf = SparkConf() \
         .setMaster('spark://spark-master:7077') \
         .setAppName('Spotify Pipeline') \
-        .set("spark.jars.packages","com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:31.1-jre") \
+        .set("spark.jars.packages","com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:30.1-jre") \
         .set("spark.hadoop.google.cloud.auth.service.account.enable", "true") \
-        .set("spark.hadoop.google.cloud.auth.service.account.json.keyfile", GCP_CREDS)
+        .set("spark.hadoop.google.cloud.auth.service.account.json.keyfile", GCP_CREDS) \
+        .set("spark.executor.userClassPathFirst", "true") \
+        .set("spark.driver.userClassPathFirst", "true") \
+        .set("spark.executor.memory", "2G") \
+        .set("spark.executor.cores", "1") \
+        .set("spark.driver.memory", "2G") \
+        .set("spark.driver.cores", "1") \
+        .set("spark.eventLog.enabled", "true") \
+        .set("spark.eventLog.dir", f"gs://{bucket}/spark-logs")
+
 
         # .set("spark.jars","gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.23.2.jar,gs://hadoop-lib/gcs/gcs-connector-hadoop3-2.2.10.jar") \
 
@@ -40,7 +49,8 @@ def main(project_id, dataset, table, bucket):
     df = spark.read \
         .format("bigquery") \
         .option("table", table) \
-        .load()
+        .load() \
+        .repartition(10)
 
     df_summary = df.groupby("track_id").agg(
         count("*").alias("times_played"),
@@ -57,6 +67,7 @@ def main(project_id, dataset, table, bucket):
         .format("bigquery") \
         .option("table", output_table) \
         .option("temporaryGcsBucket", bucket) \
+        .option("writeMethod", "direct") \
         .mode("overwrite") \
         .save()
     
