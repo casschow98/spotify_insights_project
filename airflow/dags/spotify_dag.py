@@ -1,7 +1,6 @@
 
 from airflow.models import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.bash import BashOperator
 from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 import pendulum
@@ -20,8 +19,6 @@ TABLE = os.environ.get("BQ_TABLE")
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 JAVA_HOME = os.environ.get("JAVA_HOME","/opt/bitnami/java")
 GCP_CREDS= os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-
-
 
 
 # Default arguments for the DAG
@@ -96,26 +93,6 @@ delete_local_task = PythonOperator(
     dag=dag
 )
 
-# spark_submit_task = BashOperator(
-#     task_id='spark_submit_task',
-#     bash_command="""
-#         spark-submit \
-#         --master spark://spark-master:7077 \
-#         --conf spark.jars.packages=com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.24.1,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.5 \
-#         --conf spark.hadoop.google.cloud.auth.service.account.enable=true \
-#         --conf spark.hadoop.google.cloud.auth.service.account.json.keyfile={GCP_CREDS} \
-#         --conf spark.hadoop.fs.AbstractFileSystem.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS \
-#         --conf spark.hadoop.fs.gs.impl=com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem \
-#         --conf spark.hadoop.fs.gs.auth.service.account.json.keyfile={GCP_CREDS} \
-#         --conf spark.hadoop.fs.gs.auth.service.account.enable=true \
-#         '/opt/airflow/dags/spark/spark_job.py' \
-#         --project_id {PROJECT_ID} \
-#         --dataset {DATASET} \
-#         --table {TABLE} \
-#         --bucket {BUCKET}
-#     """
-# )
-
 
 # Task to submit the Spark job
 spark_submit_task = SparkSubmitOperator(
@@ -138,16 +115,15 @@ spark_submit_task = SparkSubmitOperator(
         "spark.driver.cores": "1",
         "spark.executor.userClassPathFirst": "true",
         "spark.driver.userClassPathFirst": "true",
-        "spark.jars.packages":"com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:30.1-jre",
-        # "spark.jars":"dags/spark/spark-bigquery-with-dependencies_2.12-0.34.0.jar,dags/spark/gcs-connector-hadoop3-2.2.10.jar",
-        "spark.hadoop.google.cloud.auth.service.account.enable":"true",
-        "spark.hadoop.google.cloud.auth.service.account.json.keyfile":GCP_CREDS,
-        "spark.hadoop.fs.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
-        "spark.hadoop.fs.AbstractFileSystem.gs.impl":"com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
+        "spark.jars.packages": "com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:30.1-jre",
+        "spark.hadoop.google.cloud.auth.service.account.enable": "true",
+        "spark.hadoop.google.cloud.auth.service.account.json.keyfile": GCP_CREDS,
+        "spark.hadoop.fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
+        "spark.hadoop.fs.AbstractFileSystem.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
     },
     dag=dag
 )
 
 
 # Dependencies between the tasks
-get_recent_tracks_task >> upload_gcs_task >> delete_local_task
+get_recent_tracks_task >> upload_gcs_task >> delete_local_task >> spark_submit_task

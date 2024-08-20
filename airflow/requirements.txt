@@ -4,4 +4,3 @@ google-cloud-bigquery
 apache-airflow[google]
 requests
 apache-airflow-providers-apache-spark
-# pyspark

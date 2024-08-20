@@ -71,27 +71,7 @@ class gcs_bq_upload:
             print(f"Error loading data from {source_uri} to {self.TABLE}: {str(e)}")
             raise AirflowException("Task failed due to an exception")
                     
-
-    # def run_spark_job(self):
-    #     # Command to submit the Spark job
-    #     spark_submit_command = [
-    #         '/opt/bitnami/spark/bin/spark-submit',
-    #         '--master', 'local',
-    #         'opt/spark/spark_job.py',
-    #         '--bq_table_input', f'gs://{self.BUCKET}/{self.gcs_path}',
-    #         '--project', self.PROJECT_ID,
-    #         '--dataset', self.DATASET,
-    #         '--table', self.TABLE
-    #     ]
-
-    #     try:
-    #         # Execute the Spark job
-    #         subprocess.run(spark_submit_command, check=True)
-    #         print("Spark job submitted successfully")
-    #     except subprocess.CalledProcessError as e:
-    #         print(f"Error submitting Spark job: {str(e)}")
-    #         raise AirflowException("Task failed due to an exception")
-    
+                    
 
     def get_gcs_path(self, filename):
         # Use regexpressions to search for matches for date values in the filename string

@@ -27,8 +27,6 @@ def main(project_id, dataset, table, bucket):
         .set("spark.eventLog.dir", f"gs://{bucket}/spark-logs")
 
 
-        # .set("spark.jars","gs://spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.23.2.jar,gs://hadoop-lib/gcs/gcs-connector-hadoop3-2.2.10.jar") \
-
 
     sc = SparkContext(conf=conf)
 
