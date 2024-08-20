@@ -37,8 +37,8 @@ def get_songs_callable():
     grt.retrieve_songs()
 
 def gcp_upload_callable():
-    guc = gcs_bq_upload()
-    guc.process_csv()
+    gbu = gcs_bq_upload()
+    gbu.process_csv()
 
 
 def delete_contents(home_dir, names):
