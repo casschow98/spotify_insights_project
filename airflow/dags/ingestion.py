@@ -102,8 +102,6 @@ class get_recent_tracks:
 
     def utc_to_pt(self, utc_ts):
         pacific_tz = pytz.timezone('America/Los_Angeles')
-        # utc_dt = datetime.strptime(utc_ts, "%Y-%m-%dT%H:%M:%S.%fZ")
-        # utc_dt = utc_dt.replace(tzinfo=pytz.utc)
         pt_dt = utc_ts.astimezone(pacific_tz)
         pt_fmt = pt_dt.strftime("%Y-%m-%d %H:%M:%S")
 
@@ -145,7 +143,6 @@ class get_recent_tracks:
 
         rt_df = pd.DataFrame(rt_rows)
         rt_df = rt_df.sort_values(by='played_at', ascending=True)
-        rt_df = rt_df.iloc[1:,:]
         size = len(rt_df)
         print(f"**Dataframe has total of {size} records**")
 

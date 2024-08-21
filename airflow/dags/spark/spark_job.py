@@ -50,11 +50,13 @@ def main(project_id, dataset, table, bucket):
         .load() \
         .repartition(10)
 
-    df_summary = df.groupby("track_id").agg(
-        count("*").alias("times_played"),
-        first("track_name").alias("track_name"),
-        first("artists").alias("artists")
-    )
+    df_summary = df.groupby("track_id") \
+        .agg(
+            count("*").alias("times_played"),
+            first("track_name").alias("track_name"),
+            first("artists").alias("artists"),
+            first("spotify_url").alias("spotify_url")
+        )
 
     top_tracks = df_summary.orderBy(col("times_played").desc()).limit(10)
 

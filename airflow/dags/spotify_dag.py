@@ -17,8 +17,9 @@ BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
 DATASET = os.environ.get("BQ_DATASET")
 TABLE = os.environ.get("BQ_TABLE")
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
-JAVA_HOME = os.environ.get("JAVA_HOME","/opt/bitnami/java")
+# JAVA_HOME = os.environ.get("JAVA_HOME","/opt/bitnami/java")
 GCP_CREDS= os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+## MAKE VARIABLE FOR SPARK-AIRFLOW CONNECTION NAME!!!!
 
 
 # Default arguments for the DAG
