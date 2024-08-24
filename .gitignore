@@ -27,7 +27,3 @@ airflow/config/
 
 
 .env
-
-dags/
-logs/
-plugins/
