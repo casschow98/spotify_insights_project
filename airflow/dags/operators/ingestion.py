@@ -190,7 +190,7 @@ class get_recent_tracks:
         df['track_id'] = df['track_id'].astype(str)
         df['track_name'] = df['track_name'].astype(str)
         df['artists'] = df['artists'].astype(str)
-        df['played_at'] = pd.to_datetime(df['played_at'])
+        df['played_at'] = pd.to_datetime(df['played_at'],format='ISO8601')
         df['duration_ms'] = df['duration_ms'].astype(int)
         df['track_duration'] = df['track_duration'].astype(str)
         df['spotify_url'] = df['spotify_url'].astype(str)
