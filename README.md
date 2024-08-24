@@ -41,7 +41,7 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 ## Purpose
 The purpose of this project was to design and develop a prototype of a modern data pipeline focused on wildfire activity and recreational trails in British Columbia (BC), Canada.
 
-## Web Map
+## Streamlit Application
 Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
 \
 \
@@ -50,3 +50,17 @@ Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
 Figure 1. Overview of the final report visualized as a streamlit application.
 \
 \
+## Data Stack
+- **Development Platform**: Docker
+- **Infrastructure as Code (IAC)**: Terraform
+- **Orchestration**: Apache Airflow
+- **Data Lake**: Google Cloud Storage
+- **Data Warehouse**: Google Big Query
+- **Transformations**: Apache Spark
+- **Data Visualization**: Streamlit Cloud
+
+### Architecture
+<a name="figure-3"></a>
+\
+![](images/arch_diagram.png)
+Figure 3. Diagram modelling the tools used in this project.
