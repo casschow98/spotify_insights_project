@@ -28,5 +28,6 @@ airflow/config/
 
 .env
 
-spark/
-
+dags/
+logs/
+plugins/

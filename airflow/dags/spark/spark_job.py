@@ -1,7 +1,8 @@
 from pyspark.sql import SparkSession
 from pyspark.conf import SparkConf
 from pyspark.context import SparkContext
-from pyspark.sql.functions import col, count, first
+from pyspark.sql.functions import col, count, first, row_number
+from pyspark.sql.window import Window
 import argparse
 import os
 
@@ -55,10 +56,15 @@ def main(project_id, dataset, table, bucket):
             count("*").alias("times_played"),
             first("track_name").alias("track_name"),
             first("artists").alias("artists"),
-            first("spotify_url").alias("spotify_url")
+            first("spotify_url").alias("spotify_url"),
+            first("danceability").alias("danceability"),
+            first("energy").alias("energy"),
+            first("valence").alias("valence")
         )
 
     top_tracks = df_summary.orderBy(col("times_played").desc()).limit(10)
+    window_spec = Window.orderBy(col("times_played").desc())
+    top_tracks = top_tracks.withColumn("rank", row_number().over(window_spec))
 
     output_table = f"{project_id}.{dataset}.spotify_summary"
 

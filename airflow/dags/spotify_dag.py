@@ -6,10 +6,11 @@ from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOpe
 import pendulum
 import datetime
 import os
-from ingestion import get_recent_tracks
 import re
 import shutil
-from gcp_fn import gcs_bq_upload
+from operators.gcp_fn import gcs_bq_upload
+from operators.ingestion import get_recent_tracks
+
 
 # Define bucket and home path environment variables
 home_path = os.environ.get("AIRFLOW_HOME","/opt/airflow/")
@@ -17,9 +18,8 @@ BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
 DATASET = os.environ.get("BQ_DATASET")
 TABLE = os.environ.get("BQ_TABLE")
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
-# JAVA_HOME = os.environ.get("JAVA_HOME","/opt/bitnami/java")
 GCP_CREDS= os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-## MAKE VARIABLE FOR SPARK-AIRFLOW CONNECTION NAME!!!!
+SPARK_AIRFLOW_CONN_ID= os.environ.get("SPARK_AIRFLOW_CONN_ID")
 
 
 # Default arguments for the DAG
@@ -99,7 +99,7 @@ delete_local_task = PythonOperator(
 spark_submit_task = SparkSubmitOperator(
     task_id='spark_submit_task',
     application='/opt/airflow/dags/spark/spark_job.py',
-    conn_id='spark-conn',
+    conn_id=SPARK_AIRFLOW_CONN_ID,
     executor_memory='2g',
     total_executor_cores=2,
     application_args=[
