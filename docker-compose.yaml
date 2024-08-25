@@ -88,6 +88,7 @@ x-airflow-common:
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/config:/opt/airflow/config
     - ./airflow/plugins:/opt/airflow/plugins
+    - ./airflow/airflow.cfg:/opt/airflow/airflow.cfg
     - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
    
   user: "${AIRFLOW_UID:-50000}:0"
