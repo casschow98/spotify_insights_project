@@ -6,7 +6,6 @@ ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
 USER root
 
-# Install necessary packages including Java
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
         vim \
