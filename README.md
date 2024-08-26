@@ -62,5 +62,5 @@ Figure 1. Overview of the final report visualized as a streamlit application.
 ### Architecture
 <a name="figure-3"></a>
 \
-![](images/arch_diagram.png)
+![](images/data-stack-diagram.jpg)
 Figure 3. Diagram modelling the tools used in this project.
