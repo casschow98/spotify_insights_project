@@ -73,7 +73,7 @@ Figure 3. Diagram modelling the tools used in this project.
   - The purpose of using this type of request is to obtain audio feature data for each track using track_id's
   - This type of API request requires a user to obtain a Client Secret and Client ID obtained from the My App page of the user's dashboard. It is after converted to base-64 encoding
 - **Authorization Code**
-  - The purpose of using this type of request is to obtain data on the recently played tracks for a specific user profile
+  - The purpose of using this type of request is to obtain the recently played tracks for a specific user profile
   - This type of API request also requires the Client Secret and Client ID converted to base-64 encoding as described above
   - It is also required to obtain an authorization code through accessing an authorization url including the variables: client id, redirect uri (detailed when creating the app in the user's spotify account), and the scope (in this case, scope is user-read-recently-played)
   - It will be in this format:
@@ -81,6 +81,25 @@ Figure 3. Diagram modelling the tools used in this project.
   - With the base-64 encoded client id and client secret and the authorization code, user can obtain temporary access token and refresh token
   - Refresh token is used in this project to make requests to the API without the need to repeatedly access the url and obtain a new authorization code prior
   See [Spotify Documentation](https://developer.spotify.com/documentation/web-api/concepts/authorization) for information on the different types of API requests.
-
-
-
+\
+\
+##Setup
+- **Google Cloud Platform**
+  - Services account and project
+  - IAM user permissions and API's
+  - Credentials keyfile and ssh client
+  - VM instance
+- **VM Instance**
+  - Anaconda, Docker, Terraform, Spark installation
+  - GCP credentials retrieval
+- **Docker**
+  - Docker build context and volume mapping
+- **Terraform**
+  - Configure GCP provider with credentials
+  - Resource configuration (i.e., storage bucket, dataset)
+\
+\
+## Workflow Orchestration
+- Apache Airflow was used as a workflow orchestrator to manage the tasks of data ingestion, storage, and transformation
+- Tasks were configured using Python and Spark operators and defined in a Directed Acyclic Graphs (DAG)
+- 
