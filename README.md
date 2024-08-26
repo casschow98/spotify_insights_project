@@ -39,7 +39,7 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 
 
 ## Purpose
-The purpose of this project was to design and develop a modern data pipeline that interacts with the Spotify Web API and displays user listening history and audio analysis.
+The purpose of this project was to design and develop a modern data pipeline that interacts with the Spotify Web API and displays user listening history and audio analysis (specifically, using my personal spotify account).
 
 ## Streamlit Application
 Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
@@ -69,9 +69,11 @@ Figure 3. Diagram modelling the tools used in this project.
 ## Data Sources
 - This project makes two types of requests to the Spotify Web API: Client Credentials and Authorization Code
 - Access tokens for each are renewed in a post request every time that the directed acyclic graph (DAG) is run
-- **Client Credentials
+- **Client Credentials**
+  - The purpose of using this type of request is to obtain audio feature data for each track using track_id's
   - This type of API request requires a user to obtain a Client Secret and Client ID obtained from the My App page of the user's dashboard. It is after converted to base-64 encoding
-- **Authorization Code
+- **Authorization Code**
+  - The purpose of using this type of request is to obtain data on the recently played tracks for a specific user profile
   - This type of API request also requires the Client Secret and Client ID converted to base-64 encoding as described above
   - It is also required to obtain an authorization code through accessing an authorization url including the variables: client id, redirect uri (detailed when creating the app in the user's spotify account), and the scope (in this case, scope is user-read-recently-played)
   - It will be in this format:
