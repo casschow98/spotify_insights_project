@@ -39,7 +39,7 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 
 
 ## Purpose
-The purpose of this project was to design and develop a prototype of a modern data pipeline focused on wildfire activity and recreational trails in British Columbia (BC), Canada.
+The purpose of this project was to design and develop a modern data pipeline that interacts with the Spotify Web API and displays user listening history and audio analysis (specifically, using my personal spotify account).
 
 ## Streamlit Application
 Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
@@ -62,5 +62,44 @@ Figure 1. Overview of the final report visualized as a streamlit application.
 ### Architecture
 <a name="figure-3"></a>
 \
-![](images/arch_diagram.png)
+![](images/data-stack-diagram.jpg)
 Figure 3. Diagram modelling the tools used in this project.
+\
+\
+## Data Sources
+- This project makes two types of requests to the Spotify Web API: Client Credentials and Authorization Code
+- Access tokens for each are renewed in a post request every time that the directed acyclic graph (DAG) is run
+- **Client Credentials**
+  - The purpose of using this type of request is to obtain audio feature data for each track using track_id's
+  - This type of API request requires a user to obtain a Client Secret and Client ID obtained from the My App page of the user's dashboard. It is after converted to base-64 encoding
+- **Authorization Code**
+  - The purpose of using this type of request is to obtain the recently played tracks for a specific user profile
+  - This type of API request also requires the Client Secret and Client ID converted to base-64 encoding as described above
+  - It is also required to obtain an authorization code through accessing an authorization url including the variables: client id, redirect uri (detailed when creating the app in the user's spotify account), and the scope (in this case, scope is user-read-recently-played)
+  - It will be in this format:
+     - f"https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={scope}"
+  - With the base-64 encoded client id and client secret and the authorization code, user can obtain temporary access token and refresh token
+  - Refresh token is used in this project to make requests to the API without the need to repeatedly access the url and obtain a new authorization code prior
+  See [Spotify Documentation](https://developer.spotify.com/documentation/web-api/concepts/authorization) for information on the different types of API requests.
+\
+\
+##Setup
+- **Google Cloud Platform**
+  - Services account and project
+  - IAM user permissions and API's
+  - Credentials keyfile and ssh client
+  - VM instance
+- **VM Instance**
+  - Anaconda, Docker, Terraform, Spark installation
+  - GCP credentials retrieval
+- **Docker**
+  - Docker build context and volume mapping
+- **Terraform**
+  - Configure GCP provider with credentials
+  - Resource configuration (i.e., storage bucket, dataset)
+\
+\
+## Workflow Orchestration
+- Apache Airflow was used as a workflow orchestrator to manage the tasks of data ingestion, storage, and transformation
+- Tasks were configured using Python and Spark operators and defined in a Directed Acyclic Graphs (DAG)
+- 
