@@ -23,6 +23,7 @@ This project is a developed data pipeline that retrieves data from the Spotify W
   <summary><a href="#workflow-orchestration">Workflow Orchestration</a></summary>
   
   - [Figure 4](#figure-4). Airflow DAG modelling the tasks in this workflow.
+  - [Figure 5](#figure-5). Sample view of the main BigQuery table.
 
 </details>
 <details>
@@ -98,21 +99,42 @@ Figure 3. Diagram modelling the tools used in this project.
   - Resource configuration (i.e., storage bucket, dataset)
 
 ## Workflow Orchestration
-- Apache Airflow was used as a workflow orchestrator to manage the tasks of data ingestion, storage, and transformation
-- Tasks were configured using Python and Spark operators and defined in a Directed Acyclic Graphs (DAG)
+- Apache Airflow orchestrates the workflow, managing the tasks of data ingestion, storage, and transformation
+- Python and Spark operators execute tasks defined in a Directed Acyclic Graphs (DAG) and are triggered on an hourly schedule
 
 <a name="figure-4"></a>
 
 ![](images/spotify_dag.png)
 Figure 4. Airflow DAG modelling the tasks in this workflow.
 
-## Data Warehouse Transformations
-- Apache Spark was used to perform a basic transformation on the main table in bigquery and write summarizing data of the top ten tracks to a new table in bigquery
-- The spark job operates on a standalone cluster and uses a spark-bigquery jar and a gcs-connector:hadoop3 jar to read and write to Bigquery (see airflow/dags/spark/spark_job.py script for configurations)
+### Workflow Summary
+1. get_recent_tracks_task
+   - Retrieves access tokens and submits API requests to obtain the recently played tracks and audio features from the Spotify API
+   - If the response returns empty (i.e., no new songs are found), the entire workflow stops and tasks are marked as skipped (pink) in Airflow
+   - Uses Pandas library to manipulate dataframes, and saves data to a local .csv
+2. upload_gcs_task
+   - Uploads local .csv to Google Cloud Storage Bucket
+   - Submits a BigQuery load job with a defined schema.json to copy data from the .csv in GCS to BigQuery
+3. delete_local_task
+   - Deletes the local directory containing the .csv
+4. spark_submit_task
+   - Creates a Spark session on a standalone cluster
+   - Spark job reads from the BigQuery main table and creates a new table of the top ten tracks using pyspark functions
+   - Writes summary table to the BigQuery dataset
 
 <a name="figure-5"></a>
 
+![](images/bigquery_spotify_2.png)
+Figure 5. Sample view of the data in BigQuery.
+
+   
+## Data Warehouse Transformations
+- Apache Spark is used to apply basic transformations to the data in BigQuery and write a new summary table of the top ten tracks
+- The Spark job operates on a standalone cluster and uses a spark-bigquery jar and a gcs-connector:hadoop3 jar to read and write to BigQuery
+
+<a name="figure-6"></a>
+
 ![](images/spotify_pipeline_spark.png)
-Figure 4. Spark Master UI.
+Figure 6. Spark Master UI.
 
 
