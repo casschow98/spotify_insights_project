@@ -13,7 +13,7 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 <details>
   <summary><a href="#data-stack">Data Stack</a></summary>
   
-  - [Figure 3](#figure-3). Diagram modelling the tools used in this project.
+  - [Figure 3](#figure-3). Diagram of the tools used in this project.
 </details>
 
 [Data Sources](#data-sources)
@@ -22,16 +22,13 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 <details>
   <summary><a href="#workflow-orchestration">Workflow Orchestration</a></summary>
   
-  - [Figure 6](#figure-6). Airflow DAG modelling the tasks in this workflow.
-  - [Figure 7](#figure-7). Comparison between geojson and newline-delimited geojson format, processed using the geojson2ndjson command-line tool.
-  - [Figure 8](#figure-8). Airflow DAG graph for processing the recreation trails dataset.
-  - [Figure 9](#figure-9). Airflow DAG graph for processing the wildfire perimeters dataset.
-  - [Figure 10](#figure-10). Airflow DAG graph for running the DBT models (staging and core)
+  - [Figure 4](#figure-4). Airflow DAG modelling the tasks in this workflow.
+
 </details>
 <details>
   <summary><a href="#data-warehouse-transformations">Data Warehouse Transformations</a></summary>
 
-  - [Figure 11](#figure-11). Spark job python script.
+  - [Figure 5](#figure-5). Spark Master UI.
 </details>
 
 
@@ -111,9 +108,11 @@ Figure 4. Airflow DAG modelling the tasks in this workflow.
 
 ## Data Warehouse Transformations
 - Apache Spark was used to perform a basic transformation on the main table in bigquery and write summarizing data of the top ten tracks to a new table in bigquery
-- The spark job operates on a standalone cluster (see dags/spark/spark_job.py for configurations)
+- The spark job operates on a standalone cluster and uses a spark-bigquery jar and a gcs-connector:hadoop3 jar to read and write to Bigquery (see airflow/dags/spark/spark_job.py script for configurations)
 
 <a name="figure-5"></a>
 
-![](images/spotify_dag.png)
-Figure 4. Airflow DAG modelling the tasks in this workflow.
+![](images/spotify_pipeline_spark.png)
+Figure 4. Spark Master UI.
+
+
