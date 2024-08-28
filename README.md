@@ -23,13 +23,13 @@ This project is a developed data pipeline that retrieves data from the Spotify W
   <summary><a href="#workflow-orchestration">Workflow Orchestration</a></summary>
   
   - [Figure 4](#figure-4). Airflow DAG modelling the tasks in this workflow.
-  - [Figure 5](#figure-5). Sample view of the main BigQuery table.
+  - [Figure 5](#figure-5). Sample view of the data in BigQuery.
 
 </details>
 <details>
   <summary><a href="#data-warehouse-transformations">Data Warehouse Transformations</a></summary>
 
-  - [Figure 5](#figure-5). Spark Master UI.
+  - [Figure 6](#figure-6). Spark Master UI.
 </details>
 
 
