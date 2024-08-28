@@ -3,29 +3,26 @@
 This project is a developed data pipeline that retrieves data from the Spotify Web API and presents insights on my listening history in a streamlit app.
 
 ## Table of Contents
-[Purpose](#purpose)
+[Objective](#objective)
 <details>
-  <summary><a href="#streamlit-app">Streamlit Application</a></summary>
+  <summary><a href="#streamlit-application">Streamlit Application</a></summary>
   
-  - [Figure 1](#figure-1). Overview of the final application.
+  - [Figure 1](#figure-1). Table listing the top ten most listened to songs in the final streamlit application.
+  - [Figure 2](@figure-2). Analysis of the audio features of the top 10 songs listened to.
 </details>
 <details>
   <summary><a href="#data-stack">Data Stack</a></summary>
   
   - [Figure 3](#figure-3). Diagram modelling the tools used in this project.
 </details>
-<details>
-  <summary><a href="#data-sources">Data Sources</a></summary>
-  
-  - [Figure 4](#figure-4). Example of visualization of wildfire perimeters data in the final report.
-  - [Figure 5](#figure-5). Example of visualization of recreation trails data in the final report.
-</details>
+
+[Data Sources](#data-sources)
 
 [Setup](#setup)
 <details>
   <summary><a href="#workflow-orchestration">Workflow Orchestration</a></summary>
   
-  - [Figure 6](#figure-6). Sample of shapefile contents from data source.
+  - [Figure 6](#figure-6). Airflow DAG modelling the tasks in this workflow.
   - [Figure 7](#figure-7). Comparison between geojson and newline-delimited geojson format, processed using the geojson2ndjson command-line tool.
   - [Figure 8](#figure-8). Airflow DAG graph for processing the recreation trails dataset.
   - [Figure 9](#figure-9). Airflow DAG graph for processing the wildfire perimeters dataset.
@@ -38,18 +35,24 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 </details>
 
 
-## Purpose
+## Objective
 The purpose of this project was to design and develop a modern data pipeline that interacts with the Spotify Web API and displays user listening history and audio analysis (specifically, using my personal spotify account).
 
 ## Streamlit Application
 Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
-\
-\
+
 <a name="figure-1"></a>
-[![](images/dekart_overview.png)](https://spotify-insights-project-cchow.streamlit.app/)
-Figure 1. Overview of the final report visualized as a streamlit application.
-\
-\
+
+[![](images/spotify_top_ten.png)](https://spotify-insights-project-cchow.streamlit.app/)
+
+Figure 1. Table listing the top ten most listened to songs in the final streamlit application.
+
+<a name="figure-2"></a>
+![](images/spotify_bar_graph.png)
+
+Figure 2. Analysis of the audio features of the top 10 songs listened to.
+
+
 ## Data Stack
 - **Development Platform**: Docker
 - **Infrastructure as Code (IAC)**: Terraform
@@ -61,29 +64,28 @@ Figure 1. Overview of the final report visualized as a streamlit application.
 
 ### Architecture
 <a name="figure-3"></a>
-\
+
 ![](images/data-stack-diagram.jpg)
 Figure 3. Diagram modelling the tools used in this project.
-\
-\
+
 ## Data Sources
-- This project makes two types of requests to the Spotify Web API: Client Credentials and Authorization Code
-- Access tokens for each are renewed in a post request every time that the directed acyclic graph (DAG) is run
+- Access tokens for two types of API requests are renewed every time that the directed acyclic graph (DAG) is run
 - **Client Credentials**
   - The purpose of using this type of request is to obtain audio feature data for each track using track_id's
   - This type of API request requires a user to obtain a Client Secret and Client ID obtained from the My App page of the user's dashboard. It is after converted to base-64 encoding
 - **Authorization Code**
   - The purpose of using this type of request is to obtain the recently played tracks for a specific user profile
   - This type of API request also requires the Client Secret and Client ID converted to base-64 encoding as described above
-  - It is also required to obtain an authorization code through accessing an authorization url including the variables: client id, redirect uri (detailed when creating the app in the user's spotify account), and the scope (in this case, scope is user-read-recently-played)
-  - It will be in this format:
-     - f"https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={scope}"
+  - It is also required to obtain an authorization code through accessing an authorization url using: client id, redirect uri, and scope (in this case, scope is user-read-recently-played)
+  - Example:
+     - "https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}"
   - With the base-64 encoded client id and client secret and the authorization code, user can obtain temporary access token and refresh token
   - Refresh token is used in this project to make requests to the API without the need to repeatedly access the url and obtain a new authorization code prior
-  See [Spotify Documentation](https://developer.spotify.com/documentation/web-api/concepts/authorization) for information on the different types of API requests.
-\
-\
-##Setup
+ 
+  
+- See [Spotify Documentation](https://developer.spotify.com/documentation/web-api/concepts/authorization) for information on submitting requests to the Spotify Web API.
+
+## Setup
 - **Google Cloud Platform**
   - Services account and project
   - IAM user permissions and API's
@@ -97,9 +99,21 @@ Figure 3. Diagram modelling the tools used in this project.
 - **Terraform**
   - Configure GCP provider with credentials
   - Resource configuration (i.e., storage bucket, dataset)
-\
-\
+
 ## Workflow Orchestration
 - Apache Airflow was used as a workflow orchestrator to manage the tasks of data ingestion, storage, and transformation
 - Tasks were configured using Python and Spark operators and defined in a Directed Acyclic Graphs (DAG)
-- 
+
+<a name="figure-4"></a>
+
+![](images/spotify_dag.png)
+Figure 4. Airflow DAG modelling the tasks in this workflow.
+
+## Data Warehouse Transformations
+- Apache Spark was used to perform a basic transformation on the main table in bigquery and write summarizing data of the top ten tracks to a new table in bigquery
+- The spark job operates on a standalone cluster (see dags/spark/spark_job.py for configurations)
+
+<a name="figure-5"></a>
+
+![](images/spotify_dag.png)
+Figure 4. Airflow DAG modelling the tasks in this workflow.
