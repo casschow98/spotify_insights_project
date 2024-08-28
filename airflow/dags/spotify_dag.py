@@ -99,11 +99,6 @@ spark_submit_task = SparkSubmitOperator(
     task_id='spark_submit_task',
     application='/opt/airflow/dags/spark/spark_job.py',
     conn_id=SPARK_AIRFLOW_CONN_ID,
-<<<<<<< HEAD
-    executor_memory='2g',
-    total_executor_cores=2,
-=======
->>>>>>> vmbranch
     application_args=[
         '--project_id', PROJECT_ID,
         '--dataset', DATASET,
