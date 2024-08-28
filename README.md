@@ -8,7 +8,7 @@ This project is a developed data pipeline that retrieves data from the Spotify W
   <summary><a href="#streamlit-application">Streamlit Application</a></summary>
   
   - [Figure 1](#figure-1). Table listing the top ten most listened to songs in the final streamlit application.
-  - [Figure 2](@figure-2). Analysis of the audio features of the top 10 songs listened to.
+  - [Figure 2](#figure-2). Analysis of the audio features of the top 10 songs listened to.
 </details>
 <details>
   <summary><a href="#data-stack">Data Stack</a></summary>
@@ -23,13 +23,13 @@ This project is a developed data pipeline that retrieves data from the Spotify W
   <summary><a href="#workflow-orchestration">Workflow Orchestration</a></summary>
   
   - [Figure 4](#figure-4). Airflow DAG modelling the tasks in this workflow.
-  - [Figure 5](#figure-5). Sample view of the main BigQuery table.
+  - [Figure 5](#figure-5). Sample view of the data in BigQuery.
 
 </details>
 <details>
   <summary><a href="#data-warehouse-transformations">Data Warehouse Transformations</a></summary>
 
-  - [Figure 5](#figure-5). Spark Master UI.
+  - [Figure 6](#figure-6). Spark Master UI.
 </details>
 
 
@@ -37,7 +37,9 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 The purpose of this project was to design and develop a modern data pipeline that interacts with the Spotify Web API and displays user listening history and audio analysis (specifically, using my personal spotify account).
 
 ## Streamlit Application
-Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
+Access the reported results in the application here: [https://spotify-insights-project-cchow.streamlit.app/](https://spotify-insights-project-cchow.streamlit.app/)
+
+Find the code for the streamlit application here: [https://github.com/casschow98/spotify-insights](https://github.com/casschow98/spotify-insights)
 
 <a name="figure-1"></a>
 
@@ -46,6 +48,7 @@ Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
 Figure 1. Table listing the top ten most listened to songs in the final streamlit application.
 
 <a name="figure-2"></a>
+
 ![](images/spotify_bar_graph.png)
 
 Figure 2. Analysis of the audio features of the top 10 songs listened to.
