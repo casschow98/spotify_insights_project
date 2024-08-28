@@ -15,7 +15,7 @@ class gcs_bq_upload:
         self.TABLE = os.environ.get("BQ_TABLE")
         self.SOURCE_DIR = os.path.join(self.HOME_PATH,"working")
 
-    # Function to upload files to Google Cloud Storage
+    # Uploads files to Google Cloud Storage
     def upload_to_gcs(self, filename):
         # Initialize a storage client
         storage_client = storage.Client()
@@ -40,25 +40,28 @@ class gcs_bq_upload:
             raise AirflowException("Task failed due to an exception")
 
 
+    # Loads .csv data from Google Cloud Storage Bucket to BigQuery
     def load_data_to_bigquery(self):
-
+        # Defines path to the schema.json
         schema_path = os.path.join(os.path.dirname(__file__), 'schema.json')
         if not os.path.isfile(schema_path):
             raise FileNotFoundError(f"Schema file not found: {schema_path}")
-            
+
         with open(schema_path, 'r') as file:
             schema = json.load(file)
 
+        # Initializes a BigQuery client
         bq_client = bigquery.Client(project=self.PROJECT_ID)
-        source_uri = f"gs://{self.BUCKET}/{self.gcs_path}"
-        destination_table = f"{self.PROJECT_ID}.{self.DATASET}.{self.TABLE}"
-
+        source_uri = f"gs://{self.BUCKET}/{self.gcs_path}" # Defines path to source data
+        destination_table = f"{self.PROJECT_ID}.{self.DATASET}.{self.TABLE}" # Defines path to output table
+        # Configures load job and parses schema.json
         job_config = bigquery.LoadJobConfig(
             schema=[bigquery.SchemaField(field['name'], field['type'], field['mode']) for field in schema],
             source_format=bigquery.SourceFormat.CSV,
             skip_leading_rows=1
         )
 
+        # Executes BigQuery load job
         try:
             load_job = bq_client.load_table_from_uri(
                 source_uri,
@@ -72,7 +75,7 @@ class gcs_bq_upload:
             raise AirflowException("Task failed due to an exception")
                     
                     
-
+    # Uses date values from .csv filename to create a path name for google cloud storage
     def get_gcs_path(self, filename):
         # Use regexpressions to search for matches for date values in the filename string
         match = re.search(r'(\d{4})-(\d{2})-(\d{2})', filename)
@@ -82,7 +85,7 @@ class gcs_bq_upload:
         
         return gcs_path
     
-
+    # For files in the local working directory, uploads them to google cloud storage, then loads them to BigQuery
     def process_csv(self):
         for filename in os.listdir(self.SOURCE_DIR):
             if filename.endswith('.csv'):

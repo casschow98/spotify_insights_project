@@ -28,8 +28,7 @@ default_args = {
     "start_date": pendulum.datetime(2024, 1, 1, tz="America/Vancouver"),
     "end_date": pendulum.datetime(2025, 2, 1, tz="America/Vancouver"),
     "depends_on_past": False,
-    "retries": 0,
-    "retry_delay": datetime.timedelta(minutes=0.5)
+    "retries": 0
 }
 
 
@@ -41,7 +40,7 @@ def gcp_upload_callable():
     gbu = gcs_bq_upload()
     gbu.process_csv()
 
-
+# Function deletes local files/directories
 def delete_contents(home_dir, names):
     try:
         for name in names:
@@ -75,7 +74,7 @@ get_recent_tracks_task = PythonOperator(
     dag=dag
 )
 
-# Task to upload to Google Cloud Storage
+# Task to upload to Google Cloud Storage then to BigQuery
 upload_gcs_task = PythonOperator(
     task_id='upload_gcs_task',
     python_callable=gcp_upload_callable,
