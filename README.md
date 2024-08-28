@@ -37,7 +37,9 @@ This project is a developed data pipeline that retrieves data from the Spotify W
 The purpose of this project was to design and develop a modern data pipeline that interacts with the Spotify Web API and displays user listening history and audio analysis (specifically, using my personal spotify account).
 
 ## Streamlit Application
-Click [here](https://spotify-insights-project-cchow.streamlit.app/) to view.
+Access the reported results in the application here: [https://spotify-insights-project-cchow.streamlit.app/](https://spotify-insights-project-cchow.streamlit.app/)
+
+Find the code for the streamlit application here: [https://github.com/casschow98/spotify-insights](https://github.com/casschow98/spotify-insights)
 
 <a name="figure-1"></a>
 
