@@ -1,0 +1,29 @@
+# Ignore Python bytecode files and __pycache__ directories
+**/__pycache__/
+*.pyc
+
+# Local .terraform directories
+**/.terraform/*
+.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Ignore transient lock info files created by terraform apply
+*.terraform.lock.hcl
+.terraform.tfstate.lock.info
+
+
+# Logs and temporary files
+*.log
+airflow/logs/
+airflow/plugins/
+airflow/config/
+
+
+.env
