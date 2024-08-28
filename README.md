@@ -48,6 +48,7 @@ Find the code for the streamlit application here: [https://github.com/casschow98
 Figure 1. Table listing the top ten most listened to songs in the final streamlit application.
 
 <a name="figure-2"></a>
+
 ![](images/spotify_bar_graph.png)
 
 Figure 2. Analysis of the audio features of the top 10 songs listened to.
