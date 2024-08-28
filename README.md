@@ -8,7 +8,7 @@ This project is a developed data pipeline that retrieves data from the Spotify W
   <summary><a href="#streamlit-application">Streamlit Application</a></summary>
   
   - [Figure 1](#figure-1). Table listing the top ten most listened to songs in the final streamlit application.
-  - [Figure 2](@figure-2). Analysis of the audio features of the top 10 songs listened to.
+  - [Figure 2](#figure-2). Analysis of the audio features of the top 10 songs listened to.
 </details>
 <details>
   <summary><a href="#data-stack">Data Stack</a></summary>
