@@ -79,7 +79,7 @@ Figure 3. Diagram modelling the tools used in this project.
   - This type of API request also requires the Client Secret and Client ID converted to base-64 encoding as described above
   - It is also required to obtain an authorization code through accessing an authorization url using: client id, redirect uri, and scope (in this case, scope is user-read-recently-played)
   - Example:
-     - "https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}"
+    `https://accounts.spotify.com/authorize?client_id={CLIENT_ID}&response_type=code&redirect_uri={REDIRECT_URI}&scope={SCOPE}`
   - With the base-64 encoded client id and client secret and the authorization code, user can obtain temporary access token and refresh token
   - Refresh token is used in this project to make requests to the API without the need to repeatedly access the url and obtain a new authorization code prior
  
