@@ -133,7 +133,7 @@ Figure 5. Sample view of the data in BigQuery.
    
 ## Data Warehouse Transformations
 - Apache Spark is used to apply basic transformations to the data in BigQuery and write a new summary table of the top ten tracks
-- The Spark job operates on a standalone cluster and uses a spark-bigquery jar and a gcs-connector:hadoop3 jar to read and write to BigQuery
+- The Spark job operates on a standalone cluster and uses the `spark-bigquery` and `gcs-connector:hadoop3` jars to read and write to BigQuery
 
 <a name="figure-6"></a>
 
