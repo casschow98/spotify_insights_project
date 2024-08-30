@@ -89,7 +89,7 @@ x-airflow-common:
     - ./airflow/config:/opt/airflow/config
     - ./airflow/plugins:/opt/airflow/plugins
     - ./airflow/airflow.cfg:/opt/airflow/airflow.cfg
-    - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
+    - /Users/Cass/.gc/my-creds.json:/.gc/my-creds.json
    
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
@@ -105,7 +105,7 @@ x-airflow-common:
 x-spark-common: &spark-common
   image: bitnami/spark:3.5.2
   volumes:
-    - /home/cassidy/.gc/my-creds.json:/.gc/my-creds.json
+    - /Users/Cass/.gc/my-creds.json:/.gc/my-creds.json
   env_file:
     - .env
   networks:
@@ -175,7 +175,7 @@ services:
       interval: 10s
       retries: 5
       start_period: 5s
-    restart: no
+    restart: "no"
     networks:
       - shared_network
 
@@ -191,7 +191,7 @@ services:
       timeout: 30s
       retries: 50
       start_period: 30s
-    restart: no
+    restart: "no"
     networks:
       - shared_network
 
@@ -206,7 +206,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: no
+    restart: "no"
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -221,7 +221,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: no
+    restart: "no"
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -244,7 +244,7 @@ services:
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
-    restart: no
+    restart: "no"
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -259,7 +259,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    restart: no
+    restart: "no"
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -358,7 +358,7 @@ services:
   #     timeout: 10s
   #     retries: 5
   #     start_period: 30s
-  #   restart: no
+  #   restart: "no"
   #   depends_on:
   #     <<: *airflow-common-depends-on
   #     airflow-init:
