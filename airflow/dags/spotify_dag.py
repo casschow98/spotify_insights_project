@@ -19,7 +19,7 @@ DATASET = os.environ.get("BQ_DATASET")
 TABLE = os.environ.get("BQ_TABLE")
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 GCP_CREDS= os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-SPARK_AIRFLOW_CONN_ID= os.environ.get("SPARK_AIRFLOW_CONN_ID")
+# SPARK_AIRFLOW_CONN_ID= os.environ.get("SPARK_AIRFLOW_CONN_ID")
 
 
 # Default arguments for the DAG
@@ -98,7 +98,6 @@ delete_local_task = PythonOperator(
 spark_submit_task = SparkSubmitOperator(
     task_id='spark_submit_task',
     application='/opt/airflow/dags/spark/spark_job.py',
-    conn_id=SPARK_AIRFLOW_CONN_ID,
     application_args=[
         '--project_id', PROJECT_ID,
         '--dataset', DATASET,
@@ -107,6 +106,7 @@ spark_submit_task = SparkSubmitOperator(
     ],
     verbose = True,
     conf={
+        "spark.master": "spark://spark-master:7077",
         "spark.executor.memory": "2G",
         "spark.executor.cores": "1",
         "spark.driver.memory": "2G",
