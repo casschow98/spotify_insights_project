@@ -73,12 +73,17 @@ x-airflow-common:
     #_PIP_ADDITIONAL_REQUIREMENTS: ''
     # The following line can be used to set a custom config file, stored in the local config folder
     # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
-    # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
 
-    GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
-    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: ${AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT}
-    GCP_PROJECT_ID: ${GCP_PROJECT_ID}
-    GCP_STORAGE_BUCKET: ${GCP_STORAGE_BUCKET}
+    # GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
+    # AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: ${AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT}
+    # GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+    # GCP_STORAGE_BUCKET: ${GCP_STORAGE_BUCKET}
+
+    AIRFLOW__CORE__WORKER_CONCURRENCY: 2
+    AIRFLOW__WEBSERVER__WORKER_REFRESH_BATCH_SIZE: 0
+    AIRFLOW__WEBSERVER__WORKER_REFRESH_INTERVAL: 0
+    AIRFLOW__WEBSERVER__WORKERS: 1
 
   env_file:
     - .env
@@ -88,10 +93,11 @@ x-airflow-common:
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/config:/opt/airflow/config
     - ./airflow/plugins:/opt/airflow/plugins
-    - ./airflow/airflow.cfg:/opt/airflow/airflow.cfg
-    - /Users/Cass/.gc/my-creds.json:/.gc/my-creds.json
+    - ./airflow/config/airflow.cfg:/opt/airflow/config/airflow.cfg
+    - /Users/Cass/.gcp/my-creds.json:/gcp/my-creds.json
    
-  user: "${AIRFLOW_UID:-50000}:0"
+  user: "${AIRFLOW_UID:-5000}:0"
+
   depends_on:
     &airflow-common-depends-on
     redis:
@@ -105,7 +111,7 @@ x-airflow-common:
 x-spark-common: &spark-common
   image: bitnami/spark:3.5.2
   volumes:
-    - /Users/Cass/.gc/my-creds.json:/.gc/my-creds.json
+    - /Users/Cass/.gcp/my-creds.json:/gcp/my-creds.json
   env_file:
     - .env
   networks:
@@ -199,18 +205,26 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-      - 8083:8080
+      - 8084:8080
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
       interval: 30s
-      timeout: 10s
+      timeout: 300s
       retries: 5
       start_period: 30s
-    restart: "no"
+    restart: "on-failure"
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"       # Set max CPU cores
+          memory: 4G        # Set max memory
+        reservations:
+          cpus: "1.0"       # Reserve min CPU cores
+          memory: 2G        # Reserve min memory
 
   airflow-scheduler:
     <<: *airflow-common
@@ -236,7 +250,7 @@ services:
         - "CMD-SHELL"
         - 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}" || celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
       interval: 30s
-      timeout: 10s
+      timeout: 300s
       retries: 5
       start_period: 30s
     environment:
@@ -244,11 +258,19 @@ services:
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
-    restart: "no"
+    restart: "on-failure"
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"       # Set max CPU cores
+          memory: 4G        # Set max memory
+        reservations:
+          cpus: "1.5"       # Reserve min CPU cores
+          memory: 2G        # Reserve min memory
 
   airflow-triggerer:
     <<: *airflow-common
