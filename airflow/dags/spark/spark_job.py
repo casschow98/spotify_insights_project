@@ -49,7 +49,7 @@ def main(project_id, dataset, table, bucket):
         .format("bigquery") \
         .option("table", table) \
         .load() \
-        .repartition(10)
+        .repartition(4, col("track_id"))
 
     df_summary = df.groupby("track_id") \
         .agg(
@@ -61,6 +61,9 @@ def main(project_id, dataset, table, bucket):
             first("energy").alias("energy"),
             first("valence").alias("valence")
         )
+    
+    df_summary = df_summary.cache()
+
 
     top_tracks = df_summary.orderBy(col("times_played").desc()).limit(10)
     window_spec = Window.orderBy(col("times_played").desc())
@@ -76,6 +79,9 @@ def main(project_id, dataset, table, bucket):
         .option("writeMethod", "direct") \
         .mode("overwrite") \
         .save()
+
+    df_summary.unpersist()
+
     
     spark.stop()
 

@@ -84,6 +84,8 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__WORKER_REFRESH_BATCH_SIZE: 0
     AIRFLOW__WEBSERVER__WORKER_REFRESH_INTERVAL: 0
     AIRFLOW__WEBSERVER__WORKERS: 1
+    # AIRFLOW__LOGGING__DELETE_LOCAL_LOGS: 'True'
+
 
   env_file:
     - .env
@@ -220,7 +222,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"       # Set max CPU cores
+          cpus: "1.0"       # Set max CPU cores
           memory: 4G        # Set max memory
         reservations:
           cpus: "1.0"       # Reserve min CPU cores
@@ -266,10 +268,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "2.0"       # Set max CPU cores
+          cpus: "1.0"       # Set max CPU cores
           memory: 4G        # Set max memory
         reservations:
-          cpus: "1.5"       # Reserve min CPU cores
+          cpus: "1.0"       # Reserve min CPU cores
           memory: 2G        # Reserve min memory
 
   airflow-triggerer:
