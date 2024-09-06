@@ -28,7 +28,7 @@ default_args = {
     "start_date": pendulum.datetime(2024, 1, 1, tz="America/Vancouver"),
     "end_date": pendulum.datetime(2025, 2, 1, tz="America/Vancouver"),
     "depends_on_past": False,
-    "retries": 0
+    "retries": 1
 }
 
 

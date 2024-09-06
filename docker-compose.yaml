@@ -84,7 +84,6 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__WORKER_REFRESH_BATCH_SIZE: 0
     AIRFLOW__WEBSERVER__WORKER_REFRESH_INTERVAL: 0
     AIRFLOW__WEBSERVER__WORKERS: 1
-    # AIRFLOW__LOGGING__DELETE_LOCAL_LOGS: 'True'
 
 
   env_file:
@@ -152,23 +151,6 @@ services:
     depends_on:
       - spark-master
 
-  # spark-worker-2:
-  #   <<: *spark-common
-  #   command: bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
-  #   ports:
-  #     - "8082:8080"  # Spark Worker UI
-  #   environment:
-  #     - SPARK_MODE=worker
-  #     - SPARK_MASTER_URL=spark://spark-master:7077
-  #     - SPARK_WORKER_MEMORY=1G
-  #     - SPARK_WORKER_CORES=2
-  #     - SPARK_RPC_AUTHENTICATION_ENABLED=no
-  #     - SPARK_RPC_ENCRYPTION_ENABLED=no
-  #     - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-  #     - SPARK_SSL_ENABLED=no
-  #     - SPARK_USER=spark
-  #   depends_on:
-  #     - spark-master
 
   postgres:
     image: postgres:13
@@ -219,14 +201,14 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"       # Set max CPU cores
-          memory: 4G        # Set max memory
-        reservations:
-          cpus: "1.0"       # Reserve min CPU cores
-          memory: 2G        # Reserve min memory
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "1.0"       # Set max CPU cores
+    #       memory: 4G        # Set max memory
+    #     reservations:
+    #       cpus: "1.0"       # Reserve min CPU cores
+    #       memory: 2G        # Reserve min memory
 
   airflow-scheduler:
     <<: *airflow-common
@@ -265,14 +247,14 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"       # Set max CPU cores
-          memory: 4G        # Set max memory
-        reservations:
-          cpus: "1.0"       # Reserve min CPU cores
-          memory: 2G        # Reserve min memory
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: "1.0"       # Set max CPU cores
+    #       memory: 4G        # Set max memory
+    #     reservations:
+    #       cpus: "1.0"       # Reserve min CPU cores
+    #       memory: 2G        # Reserve min memory
 
   airflow-triggerer:
     <<: *airflow-common

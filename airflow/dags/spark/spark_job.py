@@ -49,7 +49,7 @@ def main(project_id, dataset, table, bucket):
         .format("bigquery") \
         .option("table", table) \
         .load() \
-        .repartition(4, col("track_id"))
+        .repartition(2, col("track_id"))
 
     df_summary = df.groupby("track_id") \
         .agg(
@@ -68,19 +68,20 @@ def main(project_id, dataset, table, bucket):
     top_tracks = df_summary.orderBy(col("times_played").desc()).limit(10)
     window_spec = Window.orderBy(col("times_played").desc())
     top_tracks = top_tracks.withColumn("rank", row_number().over(window_spec))
+    top_tracks = top_tracks.coalesce(2)
 
     output_table = f"{project_id}.{dataset}.spotify_summary"
+
+    df_summary.unpersist()
 
     # Write directly to BigQuery
     top_tracks.write \
         .format("bigquery") \
         .option("table", output_table) \
         .option("temporaryGcsBucket", bucket) \
-        .option("writeMethod", "direct") \
+        .option("writeMethod", "indirect") \
         .mode("overwrite") \
         .save()
-
-    df_summary.unpersist()
 
     
     spark.stop()
