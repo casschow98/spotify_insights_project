@@ -78,8 +78,7 @@ def main(project_id, dataset, table, bucket):
     top_tracks.write \
         .format("bigquery") \
         .option("table", output_table) \
-        .option("temporaryGcsBucket", bucket) \
-        .option("writeMethod", "indirect") \
+        .option("writeMethod", "direct") \
         .mode("overwrite") \
         .save()
 
