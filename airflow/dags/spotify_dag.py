@@ -114,6 +114,8 @@ spark_submit_task = SparkSubmitOperator(
         "spark.executor.userClassPathFirst": "true",
         "spark.driver.userClassPathFirst": "true",
         "spark.jars.packages": "com.google.cloud.spark:spark-bigquery-with-dependencies_2.12:0.22.2,com.google.cloud.bigdataoss:gcs-connector:hadoop3-2.2.10,com.google.guava:guava:30.1-jre",
+        "spark.eventLog.enabled": "true",
+        "spark.eventLog.dir": f"gs://{BUCKET}/spark-logs",
         "spark.hadoop.google.cloud.auth.service.account.enable": "true",
         "spark.hadoop.google.cloud.auth.service.account.json.keyfile": GCP_CREDS,
         "spark.hadoop.fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",

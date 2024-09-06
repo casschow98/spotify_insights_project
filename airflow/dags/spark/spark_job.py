@@ -49,7 +49,7 @@ def main(project_id, dataset, table, bucket):
         .format("bigquery") \
         .option("table", table) \
         .load() \
-        .repartition(2, col("track_id"))
+        .repartition(4)
 
     df_summary = df.groupby("track_id") \
         .agg(
@@ -62,8 +62,6 @@ def main(project_id, dataset, table, bucket):
             first("valence").alias("valence")
         )
     
-    df_summary = df_summary.cache()
-
 
     top_tracks = df_summary.orderBy(col("times_played").desc()).limit(10)
     window_spec = Window.orderBy(col("times_played").desc())
@@ -72,7 +70,6 @@ def main(project_id, dataset, table, bucket):
 
     output_table = f"{project_id}.{dataset}.spotify_summary"
 
-    df_summary.unpersist()
 
     # Write directly to BigQuery
     top_tracks.write \
