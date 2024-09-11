@@ -89,7 +89,6 @@ x-airflow-common:
     AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: gs://${GCP_STORAGE_BUCKET}/airflow-logs
     AIRFLOW__LOGGING__DELETE_LOCAL_LOGS: True
     AIRFLOW__LOGGING__LOGGING_LEVEL: ERROR
-    # AIRFLOW__LOGGING__CELERY_LOGGING_LEVEL: ERROR
     AIRFLOW__LOGGING__GOOGLE_KEY_PATH: ${GOOGLE_APPLICATION_CREDENTIALS}
     AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: 300
 
@@ -102,7 +101,6 @@ x-airflow-common:
     - ./airflow/logs:/opt/airflow/logs
     - ./airflow/config:/opt/airflow/config
     - ./airflow/plugins:/opt/airflow/plugins
-    - ./airflow/config/airflow.cfg:/opt/airflow/config/airflow.cfg
     - /Users/Cass/.gcp/my-creds.json:/gcp/my-creds.json
    
   user: "${AIRFLOW_UID:-5000}:0"
