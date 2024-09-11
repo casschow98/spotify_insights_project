@@ -73,7 +73,7 @@ x-airflow-common:
     #_PIP_ADDITIONAL_REQUIREMENTS: ''
     # The following line can be used to set a custom config file, stored in the local config folder
     # If you want to use it, outcomment it and replace airflow.cfg with the name of your config file
-    AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    # AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
 
     # GOOGLE_APPLICATION_CREDENTIALS: ${GOOGLE_APPLICATION_CREDENTIALS}
     # AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: ${AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT}
@@ -84,6 +84,14 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__WORKER_REFRESH_BATCH_SIZE: 0
     AIRFLOW__WEBSERVER__WORKER_REFRESH_INTERVAL: 0
     AIRFLOW__WEBSERVER__WORKERS: 1
+    AIRFLOW__LOGGING__REMOTE_LOGGING: True
+    AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: google-cloud-platform
+    AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: gs://${GCP_STORAGE_BUCKET}/airflow-logs
+    AIRFLOW__LOGGING__DELETE_LOCAL_LOGS: True
+    AIRFLOW__LOGGING__LOGGING_LEVEL: ERROR
+    # AIRFLOW__LOGGING__CELERY_LOGGING_LEVEL: ERROR
+    AIRFLOW__LOGGING__GOOGLE_KEY_PATH: ${GOOGLE_APPLICATION_CREDENTIALS}
+    AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT: 300
 
 
   env_file:
