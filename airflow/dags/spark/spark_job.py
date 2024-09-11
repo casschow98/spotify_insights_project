@@ -30,7 +30,8 @@ def main(project_id, dataset, table, bucket):
         .set("spark.eventLog.enabled", "true") \
         .set("spark.eventLog.dir", f"gs://{bucket}/spark-logs") \
         .set("spark.sql.adaptive.enabled", "true") \
-        .set("spark.sql.adaptive.coalescePartitions.enabled", "true") 
+        .set("spark.sql.adaptive.coalescePartitions.enabled", "true") \
+        .set("spark.sql.shuffle.partitions", 4)
 
 
 

@@ -19,7 +19,6 @@ DATASET = os.environ.get("BQ_DATASET")
 TABLE = os.environ.get("BQ_TABLE")
 PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 GCP_CREDS= os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-# SPARK_AIRFLOW_CONN_ID= os.environ.get("SPARK_AIRFLOW_CONN_ID")
 
 
 # Default arguments for the DAG
@@ -118,6 +117,7 @@ spark_submit_task = SparkSubmitOperator(
         "spark.eventLog.dir": f"gs://{BUCKET}/spark-logs",
         "spark.sql.adaptive.enabled": "true",
         "spark.sql.adaptive.coalescePartitions.enabled": "true",
+        "spark.sql.shuffle.partitions": 4,
         "spark.hadoop.google.cloud.auth.service.account.enable": "true",
         "spark.hadoop.google.cloud.auth.service.account.json.keyfile": GCP_CREDS,
         "spark.hadoop.fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
