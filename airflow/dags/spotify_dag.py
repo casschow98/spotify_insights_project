@@ -119,7 +119,8 @@ spark_submit_task = SparkSubmitOperator(
         "spark.hadoop.google.cloud.auth.service.account.enable": "true",
         "spark.hadoop.google.cloud.auth.service.account.json.keyfile": GCP_CREDS,
         "spark.hadoop.fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
-        "spark.hadoop.fs.AbstractFileSystem.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS"
+        "spark.hadoop.fs.AbstractFileSystem.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS",
+        "spark.hadoop.fs.gs.temp.dir": f"gs://{BUCKET}"
     },
     dag=dag
 )
