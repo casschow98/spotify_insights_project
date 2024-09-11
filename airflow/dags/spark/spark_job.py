@@ -28,7 +28,9 @@ def main(project_id, dataset, table, bucket):
         .set("spark.driver.memory", "2G") \
         .set("spark.driver.cores", "1") \
         .set("spark.eventLog.enabled", "true") \
-        .set("spark.eventLog.dir", f"gs://{bucket}/spark-logs")
+        .set("spark.eventLog.dir", f"gs://{bucket}/spark-logs") \
+        .set("spark.sql.adaptive.enabled", "true") \
+        .set("spark.sql.adaptive.coalescePartitions.enabled", "true") 
 
 
 
@@ -108,7 +110,7 @@ def main(project_id, dataset, table, bucket):
         .format("bigquery") \
         .option("table", output_table) \
         .option("writeMethod", "direct") \
-        .option("temporaryGcsBucket", f"gs://{bucket}") \
+        .option("temporaryGcsBucket", bucket) \
         .mode("overwrite") \
         .save()
     
