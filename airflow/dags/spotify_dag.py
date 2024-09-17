@@ -117,7 +117,7 @@ spark_submit_task = SparkSubmitOperator(
         "spark.eventLog.dir": f"gs://{BUCKET}/spark-logs",
         "spark.sql.adaptive.enabled": "true",
         "spark.sql.adaptive.coalescePartitions.enabled": "true",
-        "spark.sql.shuffle.partitions": 4,
+        "spark.sql.shuffle.partitions": 2,
         "spark.hadoop.google.cloud.auth.service.account.enable": "true",
         "spark.hadoop.google.cloud.auth.service.account.json.keyfile": GCP_CREDS,
         "spark.hadoop.fs.gs.impl": "com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem",
