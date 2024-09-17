@@ -36,7 +36,7 @@ resource "google_storage_bucket" "bucket-1" {
       type = "Delete"
     }
     condition {
-      age = 30
+      age = 14
     }
   }
 
